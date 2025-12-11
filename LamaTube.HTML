@@ -1,0 +1,5556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LamaTube</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --primary-red: #ff0000;
+      --primary-dark-red: #cc0000;
+      --dark-bg: #0f0f0f;
+      --dark-header: #212121;
+      --dark-sidebar: #212121;
+      --dark-text: #ffffff;
+      --dark-secondary-text: #aaa;
+      --dark-border: #303030;
+      --dark-hover: #383838;
+      --light-bg: #f9f9f9;
+      --light-header: #ffffff;
+      --light-sidebar: #ffffff;
+      --light-text: #030303;
+      --light-secondary-text: #606060;
+      --light-border: #e5e5e5;
+      --light-hover: #f2f2f2;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Roboto', 'Segoe UI', Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--light-bg);
+      color: var(--light-text);
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    body.dark-mode {
+      background-color: var(--dark-bg);
+      color: var(--dark-text);
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px;
+      height: 60px;
+      background-color: var(--light-header);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 1px solid var(--light-border);
+    }
+
+    body.dark-mode header {
+      background-color: var(--dark-header);
+      border-bottom: 1px solid var(--dark-border);
+    }
+
+    .header-left, .header-center, .header-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 22px;
+      font-weight: bold;
+      color: var(--primary-red);
+      cursor: pointer;
+    }
+
+    .hamburger-menu {
+      cursor: pointer;
+      font-size: 20px;
+      padding: 8px;
+      border-radius: 50%;
+    }
+
+    .hamburger-menu:hover, .header-icon:hover {
+      background-color: var(--light-hover);
+    }
+
+    body.dark-mode .hamburger-menu:hover,
+    body.dark-mode .header-icon:hover {
+      background-color: var(--dark-hover);
+    }
+
+    .search-container {
+      display: flex;
+      width: 100%;
+      max-width: 600px;
+    }
+
+    .search-input {
+      flex: 1;
+      padding: 10px 15px;
+      border: 1px solid var(--light-border);
+      border-radius: 2px 0 0 2px;
+      font-size: 16px;
+      outline: none;
+      background-color: var(--light-header);
+      color: var(--light-text);
+    }
+
+    body.dark-mode .search-input {
+      background-color: var(--dark-header);
+      border-color: var(--dark-border);
+      color: var(--dark-text);
+    }
+
+    .search-btn {
+      background-color: var(--light-hover);
+      border: 1px solid var(--light-border);
+      border-left: none;
+      padding: 0 20px;
+      cursor: pointer;
+    }
+
+    body.dark-mode .search-btn {
+      background-color: var(--dark-hover);
+      border-color: var(--dark-border);
+    }
+
+    .header-icon {
+      font-size: 20px;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 50%;
+    }
+
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-color: #065fd4;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      cursor: pointer;
+      overflow: hidden;
+    }
+
+    .user-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* Dropdown Menu */
+    .dropdown-menu {
+      position: absolute;
+      top: 60px;
+      right: 20px;
+      background-color: var(--light-header);
+      border: 1px solid var(--light-border);
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      min-width: 200px;
+      z-index: 1000;
+      display: none;
+    }
+
+    body.dark-mode .dropdown-menu {
+      background-color: var(--dark-header);
+      border-color: var(--dark-border);
+    }
+
+    .dropdown-menu.active {
+      display: block;
+    }
+
+    .dropdown-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      gap: 12px;
+    }
+
+    .dropdown-item:hover {
+      background-color: var(--light-hover);
+    }
+
+    body.dark-mode .dropdown-item:hover {
+      background-color: var(--dark-hover);
+    }
+
+    .dropdown-divider {
+      height: 1px;
+      background-color: var(--light-border);
+      margin: 4px 0;
+    }
+
+    body.dark-mode .dropdown-divider {
+      background-color: var(--dark-border);
+    }
+
+    /* Main Layout */
+    .container {
+      display: flex;
+      min-height: calc(100vh - 60px);
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 240px;
+      background-color: var(--light-sidebar);
+      padding: 15px 0;
+      overflow-y: auto;
+      height: calc(100vh - 60px);
+      position: sticky;
+      top: 60px;
+      flex-shrink: 0;
+    }
+
+    body.dark-mode .sidebar {
+      background-color: var(--dark-sidebar);
+    }
+
+    .sidebar-section {
+      padding: 10px 0;
+      border-bottom: 1px solid var(--light-border);
+    }
+
+    body.dark-mode .sidebar-section {
+      border-bottom: 1px solid var(--dark-border);
+    }
+
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      padding: 10px 25px;
+      cursor: pointer;
+      text-decoration: none;
+      color: var(--light-text);
+    }
+
+    body.dark-mode .sidebar-item {
+      color: var(--dark-text);
+    }
+
+    .sidebar-item:hover {
+      background-color: var(--light-hover);
+    }
+
+    body.dark-mode .sidebar-item:hover {
+      background-color: var(--dark-hover);
+    }
+
+    .sidebar-item.active {
+      background-color: #e5e5e5;
+      font-weight: 500;
+    }
+
+    body.dark-mode .sidebar-item.active {
+      background-color: #383838;
+    }
+
+    .sidebar-item i {
+      margin-right: 25px;
+      font-size: 18px;
+      width: 24px;
+      text-align: center;
+    }
+
+    .sidebar-title {
+      padding: 10px 25px;
+      font-size: 14px;
+      color: var(--light-secondary-text);
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+
+    body.dark-mode .sidebar-title {
+      color: var(--dark-secondary-text);
+    }
+
+    /* Main Content */
+    .main-content {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      height: calc(100vh - 60px);
+    }
+
+    /* Video Player */
+    .video-player-container {
+      margin-bottom: 30px;
+    }
+
+    .video-player {
+      width: 100%;
+      aspect-ratio: 16/9;
+      background-color: #000;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 15px;
+      position: relative;
+    }
+
+    .video-player video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    /* Video Player Controls */
+    .player-controls {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(transparent, rgba(0,0,0,0.7));
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .video-player:hover .player-controls {
+      opacity: 1;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 4px;
+      background: rgba(255,255,255,0.3);
+      border-radius: 2px;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--primary-red);
+      width: 0%;
+    }
+
+    .control-buttons {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .control-left, .control-right {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .control-btn {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 18px;
+      cursor: pointer;
+      padding: 5px;
+    }
+
+    .time-display {
+      color: white;
+      font-size: 14px;
+      font-family: monospace;
+    }
+
+    .volume-slider {
+      width: 80px;
+      height: 4px;
+      -webkit-appearance: none;
+      background: rgba(255,255,255,0.3);
+      border-radius: 2px;
+      outline: none;
+    }
+
+    .volume-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: white;
+      cursor: pointer;
+    }
+
+    .quality-selector, .speed-selector {
+      background: rgba(0,0,0,0.7);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.3);
+      padding: 5px 10px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    /* Video Grid */
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .video-card {
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .video-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .video-card-content {
+      display: flex;
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .video-card-details {
+      flex: 1;
+    }
+
+    .video-card-details h3 {
+      font-size: 16px;
+      font-weight: 500;
+      line-height: 1.4;
+      margin-bottom: 4px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .video-card-channel {
+      font-size: 14px;
+      color: var(--light-secondary-text);
+      margin-bottom: 4px;
+    }
+
+    .video-card-stats {
+      font-size: 14px;
+      color: var(--light-secondary-text);
+    }
+
+    .thumbnail {
+      width: 100%;
+      aspect-ratio: 16/9;
+      background-color: #333;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 12px;
+      position: relative;
+    }
+
+    .thumbnail img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s;
+    }
+
+    .video-card:hover .thumbnail img {
+      transform: scale(1.05);
+    }
+
+    .video-duration {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      background-color: rgba(0,0,0,0.7);
+      color: white;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 12px;
+    }
+
+    .video-privacy-badge {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      background-color: rgba(0,0,0,0.7);
+      color: white;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* Video Actions */
+    .video-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .video-action {
+      background: none;
+      border: none;
+      color: var(--light-secondary-text);
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 10px;
+      border-radius: 20px;
+      transition: background-color 0.2s;
+    }
+
+    .video-action:hover {
+      background-color: var(--light-hover);
+    }
+
+    .video-action.active {
+      color: var(--primary-red);
+    }
+
+    .video-action.disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Video Info */
+    .video-info {
+      margin-top: 20px;
+    }
+
+    .video-title {
+      font-size: 24px;
+      font-weight: 500;
+      margin-bottom: 10px;
+    }
+
+    .channel-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid var(--light-border);
+    }
+
+    body.dark-mode .channel-info {
+      border-top: 1px solid var(--dark-border);
+    }
+
+    .channel-left {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .channel-details h3 {
+      font-size: 18px;
+      font-weight: 500;
+      margin-bottom: 5px;
+    }
+
+    .channel-right {
+      display: flex;
+      gap: 10px;
+    }
+
+    .subscribe-btn {
+      background-color: var(--primary-red);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .subscribe-btn:hover {
+      background-color: var(--primary-dark-red);
+    }
+
+    .subscribe-btn.subscribed {
+      background-color: var(--light-border);
+      color: var(--light-text);
+    }
+
+    body.dark-mode .subscribe-btn.subscribed {
+      background-color: var(--dark-border);
+      color: var(--dark-text);
+    }
+
+    /* Enhanced Analytics */
+    .analytics-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .date-range-selector {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .date-range-btn {
+      padding: 8px 16px;
+      background: none;
+      border: 1px solid var(--light-border);
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    body.dark-mode .date-range-btn {
+      border-color: var(--dark-border);
+    }
+
+    .date-range-btn.active {
+      background-color: var(--primary-red);
+      color: white;
+      border-color: var(--primary-red);
+    }
+
+    .analytics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .analytics-card {
+      background-color: var(--light-header);
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+    }
+
+    body.dark-mode .analytics-card {
+      background-color: var(--dark-header);
+      box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+    }
+
+    .analytics-title {
+      font-size: 18px;
+      margin-bottom: 15px;
+      color: var(--primary-red);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .analytics-value {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .analytics-change {
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .analytics-change.positive {
+      color: #06d6a0;
+    }
+
+    .analytics-change.negative {
+      color: #ef476f;
+    }
+
+    .chart-container {
+      background-color: var(--light-header);
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+      height: 400px;
+    }
+
+    body.dark-mode .chart-container {
+      background-color: var(--dark-header);
+      box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+    }
+
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .chart-title {
+      font-size: 20px;
+      font-weight: 500;
+    }
+
+    .chart-controls {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .chart-type-selector, .sort-selector {
+      padding: 8px 16px;
+      background: none;
+      border: 1px solid var(--light-border);
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    body.dark-mode .chart-type-selector,
+    body.dark-mode .sort-selector {
+      border-color: var(--dark-border);
+    }
+
+    .chart-type-selector.active,
+    .sort-selector.active {
+      background-color: var(--primary-red);
+      color: white;
+      border-color: var(--primary-red);
+    }
+
+    /* Comments */
+    .comments-section {
+      margin-top: 30px;
+    }
+
+    .comment-form {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 30px;
+    }
+
+    .comment-input {
+      flex: 1;
+      padding: 12px 15px;
+      border: 1px solid var(--light-border);
+      border-radius: 20px;
+      font-size: 16px;
+      background-color: var(--light-bg);
+      color: var(--light-text);
+      outline: none;
+    }
+
+    body.dark-mode .comment-input {
+      background-color: var(--dark-bg);
+      border-color: var(--dark-border);
+      color: var(--dark-text);
+    }
+
+    .comments-list {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .comment {
+      display: flex;
+      gap: 15px;
+    }
+
+    .comment-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: #065fd4;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .comment-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .comment-content {
+      flex: 1;
+    }
+
+    .comment-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 5px;
+      flex-wrap: wrap;
+    }
+
+    .comment-author {
+      font-weight: 500;
+    }
+
+    .comment-date {
+      color: var(--light-secondary-text);
+      font-size: 14px;
+    }
+
+    body.dark-mode .comment-date {
+      color: var(--dark-secondary-text);
+    }
+
+    .comment-text {
+      line-height: 1.5;
+      margin-bottom: 8px;
+    }
+
+    .comment-actions {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+    }
+
+    .comment-action {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      color: var(--light-secondary-text);
+      cursor: pointer;
+      font-size: 14px;
+      padding: 4px 8px;
+      border-radius: 20px;
+      transition: background-color 0.2s;
+    }
+
+    .comment-action:hover {
+      background-color: var(--light-hover);
+    }
+
+    body.dark-mode .comment-action {
+      color: var(--dark-secondary-text);
+    }
+
+    body.dark-mode .comment-action:hover {
+      background-color: var(--dark-hover);
+    }
+
+    .comment-action.active {
+      color: var(--primary-red);
+    }
+
+    .comment-sort {
+      margin-bottom: 20px;
+    }
+
+    .sort-btn {
+      background: none;
+      border: 1px solid var(--light-border);
+      padding: 6px 12px;
+      border-radius: 20px;
+      cursor: pointer;
+      margin-right: 10px;
+      font-size: 14px;
+    }
+
+    body.dark-mode .sort-btn {
+      border-color: var(--dark-border);
+    }
+
+    .sort-btn.active {
+      background-color: var(--primary-red);
+      color: white;
+      border-color: var(--primary-red);
+    }
+
+    /* Settings Modal */
+    .settings-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--light-border);
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      position: sticky;
+      top: 0;
+      background-color: var(--light-header);
+      z-index: 10;
+    }
+
+    body.dark-mode .settings-tabs {
+      border-bottom: 1px solid var(--dark-border);
+      background-color: var(--dark-header);
+    }
+
+    .settings-tab {
+      padding: 10px 20px;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+    }
+
+    .settings-tab.active {
+      border-bottom: 3px solid var(--primary-red);
+      color: var(--primary-red);
+    }
+
+    .settings-content {
+      max-height: 400px;
+      overflow-y: auto;
+      padding-right: 10px;
+    }
+
+    .settings-section {
+      margin-bottom: 25px;
+      scroll-margin-top: 60px;
+    }
+
+    .settings-section h3 {
+      margin-bottom: 15px;
+      color: var(--primary-red);
+    }
+
+    .setting-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--light-border);
+    }
+
+    body.dark-mode .setting-item {
+      border-bottom: 1px solid var(--dark-border);
+    }
+
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 24px;
+    }
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 24px;
+    }
+
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+
+    input:checked + .toggle-slider {
+      background-color: var(--primary-red);
+    }
+
+    input:checked + .toggle-slider:before {
+      transform: translateX(26px);
+    }
+
+    .theme-selector {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .theme-option {
+      padding: 10px 15px;
+      border: 2px solid var(--light-border);
+      border-radius: 5px;
+      cursor: pointer;
+      text-align: center;
+      flex: 1;
+    }
+
+    body.dark-mode .theme-option {
+      border-color: var(--dark-border);
+    }
+
+    .theme-option.active {
+      border-color: var(--primary-red);
+      background-color: rgba(255,0,0,0.1);
+    }
+
+    .history-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--light-border);
+    }
+
+    .clear-history-btn {
+      background-color: #f14757;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    /* Account Modal */
+    .account-info {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--light-border);
+    }
+
+    body.dark-mode .account-info {
+      border-bottom: 1px solid var(--dark-border);
+    }
+
+    .account-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background-color: #065fd4;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      font-weight: bold;
+      overflow: hidden;
+    }
+
+    .account-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .account-details h2 {
+      font-size: 24px;
+      margin-bottom: 5px;
+    }
+
+    .account-stats {
+      display: flex;
+      gap: 20px;
+      margin-top: 10px;
+    }
+
+    .account-stat {
+      text-align: center;
+    }
+
+    .account-stat-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--primary-red);
+    }
+
+    .account-stat-label {
+      font-size: 12px;
+      color: var(--light-secondary-text);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    body.dark-mode .account-stat-label {
+      color: var(--dark-secondary-text);
+    }
+
+    /* Modals */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.7);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background-color: var(--light-header);
+      padding: 30px;
+      border-radius: 10px;
+      max-width: 800px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    body.dark-mode .modal-content {
+      background-color: var(--dark-header);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .modal-close {
+      font-size: 24px;
+      cursor: pointer;
+      color: var(--light-secondary-text);
+    }
+
+    body.dark-mode .modal-close {
+      color: var(--dark-secondary-text);
+    }
+
+    /* Forms */
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+
+    .form-input, .form-textarea, .form-select, .form-file {
+      width: 100%;
+      padding: 12px 15px;
+      border: 1px solid var(--light-border);
+      border-radius: 5px;
+      font-size: 16px;
+      background-color: var(--light-bg);
+      color: var(--light-text);
+    }
+
+    body.dark-mode .form-input,
+    body.dark-mode .form-textarea,
+    body.dark-mode .form-select,
+    body.dark-mode .form-file {
+      background-color: var(--dark-bg);
+      border-color: var(--dark-border);
+      color: var(--dark-text);
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .btn-primary {
+      background-color: var(--primary-red);
+      color: white;
+      width: 100%;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--primary-dark-red);
+    }
+
+    .btn-danger {
+      background-color: #f47575;
+      color: white;
+      width: 100%;
+    }
+
+    .btn-danger:hover {
+      background-color: #f37422;
+    }
+
+    .btn-warning {
+      background-color: #fa5502;
+      color: white;
+      width: 100%;
+    }
+
+    .btn-warning:hover {
+      background-color: #e59400;
+    }
+
+    .form-footer {
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    .form-link {
+      color: var(--primary-red);
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    /* Continue Watching */
+    .continue-watching {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      padding: 10px;
+      background-color: var(--light-hover);
+      border-radius: 10px;
+      margin-bottom: 10px;
+      cursor: pointer;
+    }
+
+    body.dark-mode .continue-watching {
+      background-color: var(--dark-hover);
+    }
+
+    .continue-progress {
+      flex: 1;
+      height: 4px;
+      background-color: var(--light-border);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    body.dark-mode .continue-progress {
+      background-color: var(--dark-border);
+    }
+
+    .continue-progress-fill {
+      height: 100%;
+      background-color: var(--primary-red);
+    }
+
+    /* Keyboard Shortcuts Help */
+    .shortcuts-help {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .shortcut-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px;
+      border-bottom: 1px solid var(--light-border);
+    }
+
+    body.dark-mode .shortcut-item {
+      border-bottom: 1px solid var(--dark-border);
+    }
+
+    /* Notification */
+    .notification {
+      position: fixed;
+      top: 80px;
+      right: 20px;
+      background-color: var(--primary-red);
+      color: white;
+      padding: 12px 20px;
+      border-radius: 5px;
+      z-index: 1000;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      font-weight: 500;
+      max-width: 300px;
+      word-wrap: break-word;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateY(-20px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    /* Upload Progress */
+    .upload-progress {
+      margin-top: 15px;
+      padding: 15px;
+      background-color: var(--light-hover);
+      border-radius: 8px;
+      display: none;
+    }
+
+    body.dark-mode .upload-progress {
+      background-color: var(--dark-hover);
+    }
+
+    .upload-progress-bar {
+      width: 100%;
+      height: 6px;
+      background-color: var(--light-border);
+      border-radius: 3px;
+      overflow: hidden;
+      margin: 10px 0;
+    }
+
+    body.dark-mode .upload-progress-bar {
+      background-color: var(--dark-border);
+    }
+
+    .upload-progress-fill {
+      height: 100%;
+      background-color: var(--primary-red);
+      width: 0%;
+      transition: width 0.3s;
+    }
+
+    .upload-status {
+      font-size: 14px;
+      color: var(--light-secondary-text);
+      text-align: center;
+    }
+
+    body.dark-mode .upload-status {
+      color: var(--dark-secondary-text);
+    }
+
+    /* Error Message */
+    .error-message {
+      background-color: #ffebee;
+      color: #c62828;
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin: 15px 0;
+      border-left: 4px solid #c62828;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    body.dark-mode .error-message {
+      background-color: rgba(198, 40, 40, 0.1);
+      color: #ff8a80;
+      border-left-color: #ff8a80;
+    }
+
+    /* Success Message */
+    .success-message {
+      background-color: #e8f5e9;
+      color: #2e7d32;
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin: 15px 0;
+      border-left: 4px solid #2e7d32;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    body.dark-mode .success-message {
+      background-color: rgba(46, 125, 50, 0.1);
+      color: #69f0ae;
+      border-left-color: #69f0ae;
+    }
+
+    /* Video Access Restricted */
+    .video-restricted {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      text-align: center;
+      background-color: var(--light-header);
+      border-radius: 10px;
+      margin: 20px 0;
+    }
+
+    body.dark-mode .video-restricted {
+      background-color: var(--dark-header);
+    }
+
+    /* Video Management */
+    .video-management {
+      margin: 20px 0;
+      padding: 20px;
+      background-color: var(--light-hover);
+      border-radius: 10px;
+    }
+
+    body.dark-mode .video-management {
+      background-color: var(--dark-hover);
+    }
+
+    .video-management-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--light-border);
+    }
+
+    body.dark-mode .video-management-item {
+      border-bottom: 1px solid var(--dark-border);
+    }
+
+    .video-management-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .privacy-toggle {
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      cursor: pointer;
+      border: 1px solid var(--light-border);
+    }
+
+    .privacy-toggle.public {
+      background-color: #06d6a0;
+      color: white;
+    }
+
+    .privacy-toggle.private {
+      background-color: #ef476f;
+      color: white;
+    }
+
+    /* Super Secret Settings */
+    .super-secret-content {
+      margin-top: 20px;
+      padding: 20px;
+      background-color: rgba(255,0,0,0.1);
+      border-radius: 10px;
+      border: 1px solid var(--primary-red);
+    }
+
+    .password-display {
+      margin: 10px 0;
+      padding: 10px;
+      background-color: rgba(0,0,0,0.1);
+      border-radius: 5px;
+      font-family: monospace;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .sidebar {
+        position: fixed;
+        top: 60px;
+        left: 0;
+        transform: translateX(-100%);
+        z-index: 90;
+        height: calc(100vh - 60px);
+        box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        width: 280px;
+      }
+
+      .sidebar.active {
+        transform: translateX(0);
+      }
+
+      .header-center {
+        display: none;
+      }
+
+      .video-grid {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      }
+
+      .modal-content {
+        padding: 20px;
+      }
+
+      .shortcuts-help {
+        grid-template-columns: 1fr;
+      }
+
+      .analytics-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .chart-container {
+        height: 300px;
+        padding: 15px;
+      }
+
+      .channel-info {
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .channel-right {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .video-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .modal-content {
+        padding: 15px;
+      }
+
+      .chart-controls {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .chart-container {
+        height: 250px;
+      }
+
+      .video-actions {
+        flex-wrap: wrap;
+      }
+    }
+
+    /* Loading States */
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255,0,0,0.3);
+      border-radius: 50%;
+      border-top-color: var(--primary-red);
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Performance Optimizations */
+    .lazy-load {
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .lazy-load.loaded {
+      opacity: 1;
+    }
+
+    /* Scrollbar Styling */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--light-border);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--primary-red);
+      border-radius: 4px;
+    }
+
+    body.dark-mode ::-webkit-scrollbar-track {
+      background: var(--dark-border);
+    }
+
+    /* Focus States for Accessibility */
+    button:focus, input:focus, select:focus {
+      outline: 2px solid var(--primary-red);
+      outline-offset: 2px;
+    }
+
+    /* Fixed Chart Sizing */
+    .chart-container canvas {
+      max-height: 300px !important;
+      width: 100% !important;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="header-left">
+      <div class="hamburger-menu" id="hamburgerMenu">
+        <i class="fas fa-bars"></i>
+      </div>
+      <div class="logo" id="homeBtn">
+        <i class="fab fa-youtube"></i>
+        <span>LamaTube</span>
+      </div>
+    </div>
+
+    <div class="header-center">
+      <div class="search-container">
+        <input type="text" class="search-input" id="searchInput" placeholder="Search videos...">
+        <button class="search-btn" id="searchBtn">
+          <i class="fas fa-search"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="header-right">
+      <div class="header-icon" id="uploadBtn">
+        <i class="fas fa-video"></i>
+      </div>
+      <div class="user-avatar" id="userMenuBtn">
+        <span id="userInitial">?</span>
+      </div>
+    </div>
+
+    <!-- User Dropdown Menu -->
+    <div class="dropdown-menu" id="userDropdown">
+      <div class="dropdown-item" id="viewAccountBtn">
+        <i class="fas fa-user"></i>
+        <span>Your Account</span>
+      </div>
+      <div class="dropdown-item" id="openSettingsBtn">
+        <i class="fas fa-cog"></i>
+        <span>Settings</span>
+      </div>
+      <div class="dropdown-divider"></div>
+      <div class="dropdown-item" id="logoutBtn">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Log Out</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <div class="container">
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-item active" data-page="home">
+          <i class="fas fa-home"></i>
+          <span>Home</span>
+        </div>
+        <div class="sidebar-item" data-page="trending">
+          <i class="fas fa-fire"></i>
+          <span>Trending</span>
+        </div>
+        <div class="sidebar-item" data-page="subscriptions">
+          <i class="fas fa-folder"></i>
+          <span>Subscriptions</span>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-item" data-page="library">
+          <i class="fas fa-bookmark"></i>
+          <span>Library</span>
+        </div>
+        <div class="sidebar-item" data-page="history">
+          <i class="fas fa-history"></i>
+          <span>History</span>
+        </div>
+        <div class="sidebar-item" data-page="watchlater">
+          <i class="fas fa-clock"></i>
+          <span>Watch Later</span>
+        </div>
+        <div class="sidebar-item" data-page="liked">
+          <i class="fas fa-thumbs-up"></i>
+          <span>Liked Videos</span>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-title">SUBSCRIPTIONS</div>
+        <div id="subscriptionsList">
+          <!-- Dynamic subscriptions will be added here -->
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-item" data-page="yourchannel">
+          <i class="fas fa-user-circle"></i>
+          <span>Your Channel</span>
+        </div>
+        <div class="sidebar-item" data-page="analytics">
+          <i class="fas fa-chart-line"></i>
+          <span>Analytics</span>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="main-content" id="mainContent">
+      <!-- Content will be loaded here -->
+      <div id="pageContent">
+        <h1>Welcome to LamaTube</h1>
+        <p>A complete YouTube clone with real video uploads, comments, and analytics.</p>
+        <p>Please login or register to access all features.</p>
+
+        <div style="margin-top: 30px; display: flex; gap: 20px; flex-wrap: wrap;">
+          <div style="flex: 1; min-width: 300px;">
+            <h3>Demo Accounts:</h3>
+            <div class="success-message">
+              <i class="fas fa-user"></i>
+              <div>
+                <strong>Admin:</strong> official@lamatube.com / lamatube123
+              </div>
+            </div>
+            <div class="success-message">
+              <i class="fas fa-user"></i>
+              <div>
+                <strong>User:</strong> demo@lamatube.com / demo123
+              </div>
+            </div>
+          </div>
+
+          <div style="flex: 1; min-width: 300px;">
+            <h3>Features:</h3>
+            <ul style="margin-left: 20px;">
+              <li>Upload and watch videos</li>
+              <li>Like, comment, and subscribe</li>
+              <li>Track watch history</li>
+              <li>Channel analytics</li>
+              <li>Dark/Light themes</li>
+              <li>Responsive design</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Modals -->
+  <div class="modal" id="authModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="authModalTitle">Login to LamaTube</h2>
+        <span class="modal-close" id="closeAuthModal">&times;</span>
+      </div>
+      <div id="authForm">
+        <form id="loginForm">
+          <div class="form-group">
+            <label class="form-label">Username or Email</label>
+            <input type="text" class="form-input" id="loginUsername" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input type="password" class="form-input" id="loginPassword" required>
+          </div>
+          <button type="submit" class="btn btn-primary">Login</button>
+        </form>
+        <div class="form-footer">
+          <p>Don't have an account? <span class="form-link" id="switchToRegister">Register</span></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="uploadModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Upload Video</h2>
+        <span class="modal-close" id="closeUploadModal">&times;</span>
+      </div>
+      <form id="uploadForm">
+        <div class="form-group">
+          <label class="form-label">Video Title *</label>
+          <input type="text" class="form-input" id="videoTitle" required maxlength="100">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea class="form-textarea" id="videoDescription" rows="4" maxlength="5000"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <select class="form-select" id="videoCategory" required>
+            <option value="education">Education</option>
+            <option value="entertainment">Entertainment</option>
+            <option value="gaming">Gaming</option>
+            <option value="music">Music</option>
+            <option value="technology">Technology</option>
+            <option value="sports">Sports</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Privacy</label>
+          <select class="form-select" id="videoPrivacy" required>
+            <option value="public">Public</option>
+            <option value="private">Private</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Video File * (MP4, WebM, OGG - max 50MB)</label>
+          <input type="file" class="form-file" id="videoFile" accept="video/*" required>
+          <div style="font-size: 12px; color: var(--light-secondary-text); margin-top: 5px;">
+            Supported formats: MP4, WebM, OGG
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Thumbnail (Optional - JPEG, PNG, max 5MB)</label>
+          <input type="file" class="form-file" id="thumbnailFile" accept="image/*">
+        </div>
+
+        <!-- Upload Progress Indicator -->
+        <div class="upload-progress" id="uploadProgress">
+          <div>Uploading video...</div>
+          <div class="upload-progress-bar">
+            <div class="upload-progress-fill" id="uploadProgressFill"></div>
+          </div>
+          <div class="upload-status" id="uploadStatus">0%</div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="uploadSubmitBtn">
+          <i class="fas fa-upload"></i> Upload Video
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal" id="accountModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Your Account</h2>
+        <span class="modal-close" id="closeAccountModal">&times;</span>
+      </div>
+      <div id="accountContent">
+        <!-- Account info will be loaded here -->
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="settingsModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Settings</h2>
+        <span class="modal-close" id="closeSettingsModal">&times;</span>
+      </div>
+      <div class="settings-tabs" id="settingsTabs">
+        <div class="settings-tab active" data-tab="appearance">Appearance</div>
+        <div class="settings-tab" data-tab="playback">Playback</div>
+        <div class="settings-tab" data-tab="privacy">Privacy</div>
+        <div class="settings-tab" data-tab="notifications">Notifications</div>
+        <div class="settings-tab" data-tab="shortcuts">Shortcuts</div>
+        <div class="settings-tab" data-tab="advanced">Advanced</div>
+      </div>
+      <div class="settings-content" id="settingsContent">
+        <div class="settings-tab-content active" id="appearanceTab">
+          <div class="settings-section">
+            <h3>Theme</h3>
+            <div class="theme-selector">
+              <div class="theme-option active" data-theme="light">
+                <i class="fas fa-sun"></i>
+                <div>Light</div>
+              </div>
+              <div class="theme-option" data-theme="dark">
+                <i class="fas fa-moon"></i>
+                <div>Dark</div>
+              </div>
+              <div class="theme-option" data-theme="auto">
+                <i class="fas fa-adjust"></i>
+                <div>Auto</div>
+              </div>
+            </div>
+          </div>
+          <div class="settings-section">
+            <h3>Player Interface</h3>
+            <div class="setting-item">
+              <span>Always show player controls</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="alwaysShowControls" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="setting-item">
+              <span>Show video annotations</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="showAnnotations" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="settings-tab-content" id="playbackTab">
+          <div class="settings-section">
+            <h3>Playback Settings</h3>
+            <div class="setting-item">
+              <span>Default Quality</span>
+              <select id="defaultQuality" class="form-select" style="width: auto;">
+                <option value="auto">Auto</option>
+                <option value="360p">360p</option>
+                <option value="720p">720p</option>
+                <option value="1080p">1080p</option>
+              </select>
+            </div>
+            <div class="setting-item">
+              <span>Default Playback Speed</span>
+              <select id="defaultSpeed" class="form-select" style="width: auto;">
+                <option value="0.25">0.25x</option>
+                <option value="0.5">0.5x</option>
+                <option value="0.75">0.75x</option>
+                <option value="1" selected>Normal</option>
+                <option value="1.25">1.25x</option>
+                <option value="1.5">1.5x</option>
+                <option value="1.75">1.75x</option>
+                <option value="2">2x</option>
+              </select>
+            </div>
+            <div class="setting-item">
+              <span>Autoplay Next Video</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="autoplayToggle" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="setting-item">
+              <span>Always play in HD</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="alwaysHDToggle">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="settings-tab-content" id="privacyTab">
+          <div class="settings-section">
+            <h3>Privacy Settings</h3>
+            <div class="setting-item">
+              <span>Save Watch History</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="saveHistoryToggle" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="setting-item">
+              <span>Pause Watch History</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="pauseHistoryToggle">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="setting-item">
+              <span>Show Liked Videos Publicly</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="publicLikesToggle" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="setting-item">
+              <span>Show Subscriptions Publicly</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="publicSubscriptionsToggle" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="setting-item">
+              <span>Keep all videos private by default</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="privateVideosToggle">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <button class="clear-history-btn" id="clearHistoryBtn">Clear All Watch History</button>
+          </div>
+        </div>
+        <div class="settings-tab-content" id="notificationsTab">
+          <div class="settings-section">
+            <h3>Notification Settings</h3>
+            <div class="setting-item">
+              <span>Email notifications</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="emailNotificationsToggle" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="setting-item">
+              <span>Push notifications</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="pushNotificationsToggle" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="setting-item">
+              <span>New video recommendations</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="recommendationsToggle" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="setting-item">
+              <span>Subscription updates</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="subscriptionUpdatesToggle" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="settings-tab-content" id="shortcutsTab">
+          <div class="settings-section">
+            <h3>Keyboard Shortcuts</h3>
+            <div class="shortcuts-help">
+              <div class="shortcut-item">
+                <span>Space / K</span>
+                <span>Play/Pause</span>
+              </div>
+              <div class="shortcut-item">
+                <span>F</span>
+                <span>Fullscreen</span>
+              </div>
+              <div class="shortcut-item">
+                <span>M</span>
+                <span>Mute/Unmute</span>
+              </div>
+              <div class="shortcut-item">
+                <span>← / →</span>
+                <span>Seek ±5 seconds</span>
+              </div>
+              <div class="shortcut-item">
+                <span>↑ / ↓</span>
+                <span>Volume ±10%</span>
+              </div>
+              <div class="shortcut-item">
+                <span>0-9</span>
+                <span>Jump to 0-90%</span>
+              </div>
+              <div class="shortcut-item">
+                <span>> / <</span>
+                <span>Speed ±0.25x</span>
+              </div>
+              <div class="shortcut-item">
+                <span>J / L</span>
+                <span>Seek ±10 seconds</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="settings-tab-content" id="advancedTab">
+          <div class="settings-section">
+            <h3>Advanced Settings</h3>
+            <div class="setting-item">
+              <span>Enable experimental features</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="experimentalToggle">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="setting-item">
+              <span>Developer mode</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="developerModeToggle">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <button class="btn btn-warning" id="clearEverythingBtn">
+              <i class="fas fa-trash"></i> Clear Everything
+            </button>
+            <button class="btn btn-danger" id="superSecretBtn" style="margin-top: 10px;">
+              <i class="fas fa-lock"></i> Super Secret Settings
+            </button>
+            <div id="superSecretContent" class="super-secret-content" style="display: none;">
+              <h3>Super Secret Settings</h3>
+              <p><strong>Warning:</strong> This section contains sensitive information. Use with caution!</p>
+              <div id="secretData">
+                <!-- Secret data will be loaded here -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Enhanced LamaTube Database Class with All Features
+    class LamaTubeDB {
+      constructor() {
+        this.initDB();
+      }
+
+      initDB() {
+        const defaults = {
+          'lamatube_users': [],
+          'lamatube_videos': [],
+          'lamatube_history': {},
+          'lamatube_watchlater': {},
+          'lamatube_subscriptions': {},
+          'lamatube_likes': {},
+          'lamatube_comment_likes': {},
+          'lamatube_comments': {},
+          'lamatube_ads': {},
+          'lamatube_settings': {},
+          'lamatube_current_user': null,
+          'lamatube_analytics': {},
+          'lamatube_video_access': {},
+          'lamatube_subscriber_history': {}
+        };
+
+        for (const [key, value] of Object.entries(defaults)) {
+          if (!localStorage.getItem(key)) {
+            localStorage.setItem(key, JSON.stringify(value));
+          }
+        }
+
+        const settings = JSON.parse(localStorage.getItem('lamatube_settings') || '{}');
+        if (!settings.global) {
+          settings.global = {
+            theme: 'light',
+            adsEnabled: true,
+            adFrequency: 'normal'
+          };
+          localStorage.setItem('lamatube_settings', JSON.stringify(settings));
+        }
+      }
+
+      // ================== USER MANAGEMENT ===============================
+      registerUser(username, email, password) {
+        const users = JSON.parse(localStorage.getItem('lamatube_users')) || [];
+
+        if (users.find(u => u.username === username)) {
+          return { success: false, message: 'Username already exists' };
+        }
+        if (users.find(u => u.email === email)) {
+          return { success: false, message: 'Email already exists' };
+        }
+
+        const newUser = {
+          id: Date.now(),
+          username,
+          email,
+          password,
+          avatar: null,
+          bio: '',
+          subscribers: 0,
+          videos: [],
+          preferences: {
+            theme: 'light',
+            playback: {
+              quality: 'auto',
+              speed: 1,
+              autoplay: true,
+              alwaysHD: false
+            },
+            privacy: {
+              saveHistory: true,
+              pauseHistory: false,
+              publicLikes: true,
+              publicSubscriptions: true,
+              privateVideos: false
+            },
+            notifications: {
+              email: true,
+              push: true,
+              recommendations: true,
+              subscriptionUpdates: true
+            },
+            interface: {
+              alwaysShowControls: true,
+              showAnnotations: true
+            }
+          },
+          createdAt: new Date().toISOString(),
+          lastLogin: new Date().toISOString()
+        };
+        users.push(newUser);
+        localStorage.setItem('lamatube_users', JSON.stringify(users));
+        this.initUserData(newUser.id);
+        return { success: true, user: newUser };
+      }
+
+      loginUser(identifier, password) {
+        const users = JSON.parse(localStorage.getItem('lamatube_users')) || [];
+        const user = users.find(u =>
+          (u.username === identifier || u.email === identifier) &&
+          u.password === password
+        );
+
+        if (user) {
+          user.lastLogin = new Date().toISOString();
+          localStorage.setItem('lamatube_users', JSON.stringify(users));
+          localStorage.setItem('lamatube_current_user', JSON.stringify(user));
+          return { success: true, user };
+        }
+
+        return { success: false, message: 'Invalid credentials' };
+      }
+
+      logoutUser() {
+        localStorage.setItem('lamatube_current_user', JSON.stringify(null));
+        return { success: true };
+      }
+
+      changePassword(userId, currentPassword, newPassword) {
+        const users = JSON.parse(localStorage.getItem('lamatube_users')) || [];
+        const userIndex = users.findIndex(u => u.id === userId);
+
+        if (userIndex === -1) {
+          return { success: false, message: 'User not found' };
+        }
+
+        if (users[userIndex].password !== currentPassword) {
+          return { success: false, message: 'Current password is incorrect' };
+        }
+
+        users[userIndex].password = newPassword;
+        localStorage.setItem('lamatube_users', JSON.stringify(users));
+
+        const currentUser = this.getCurrentUser();
+        if (currentUser && currentUser.id === userId) {
+          currentUser.password = newPassword;
+          localStorage.setItem('lamatube_current_user', JSON.stringify(currentUser));
+        }
+
+        return { success: true, message: 'Password changed successfully' };
+      }
+
+      updateUser(userId, updates) {
+        const users = JSON.parse(localStorage.getItem('lamatube_users')) || [];
+        const userIndex = users.findIndex(u => u.id === userId);
+
+        if (userIndex !== -1) {
+          users[userIndex] = { ...users[userIndex], ...updates };
+          localStorage.setItem('lamatube_users', JSON.stringify(users));
+
+          const currentUser = this.getCurrentUser();
+          if (currentUser && currentUser.id === userId) {
+            localStorage.setItem('lamatube_current_user', JSON.stringify(users[userIndex]));
+          }
+
+          return { success: true, user: users[userIndex] };
+        }
+        return { success: false, message: 'User not found' };
+      }
+
+      deleteUser(userId) {
+        const users = JSON.parse(localStorage.getItem('lamatube_users')) || [];
+        const filteredUsers = users.filter(u => u.id !== userId);
+        localStorage.setItem('lamatube_users', JSON.stringify(filteredUsers));
+
+        const videos = JSON.parse(localStorage.getItem('lamatube_videos')) || [];
+        const filteredVideos = videos.filter(v => v.userId !== userId);
+        localStorage.setItem('lamatube_videos', JSON.stringify(filteredVideos));
+
+        const storages = [
+          'lamatube_history',
+          'lamatube_watchlater',
+          'lamatube_subscriptions',
+          'lamatube_likes',
+          'lamatube_comment_likes'
+        ];
+
+        storages.forEach(storageKey => {
+          const storage = JSON.parse(localStorage.getItem(storageKey)) || {};
+          delete storage[userId];
+          localStorage.setItem(storageKey, JSON.stringify(storage));
+        });
+
+        const comments = JSON.parse(localStorage.getItem('lamatube_comments')) || {};
+        for (const videoId in comments) {
+          comments[videoId] = comments[videoId].filter(c => c.userId !== userId);
+        }
+        localStorage.setItem('lamatube_comments', JSON.stringify(comments));
+
+        const analytics = JSON.parse(localStorage.getItem('lamatube_analytics')) || {};
+        delete analytics[userId];
+        localStorage.setItem('lamatube_analytics', JSON.stringify(analytics));
+
+        const videoAccess = JSON.parse(localStorage.getItem('lamatube_video_access')) || {};
+        for (const videoId in videoAccess) {
+          if (videoAccess[videoId].owner === userId) {
+            delete videoAccess[videoId];
+          }
+        }
+        localStorage.setItem('lamatube_video_access', JSON.stringify(videoAccess));
+
+        return { success: true };
+      }
+
+      getCurrentUser() {
+        return JSON.parse(localStorage.getItem('lamatube_current_user'));
+      }
+
+      getUserById(userId) {
+        const users = JSON.parse(localStorage.getItem('lamatube_users')) || [];
+        return users.find(u => u.id === userId);
+      }
+
+      getAllUsers() {
+        return JSON.parse(localStorage.getItem('lamatube_users')) || [];
+      }
+
+      // ================== VIDEO MANAGEMENT =====================
+      async uploadVideo(title, description, category, videoFile, thumbnailFile = null, privacy = 'public') {
+        const currentUser = this.getCurrentUser();
+        if (!currentUser) {
+          throw new Error('Authentication required');
+        }
+
+        this.validateVideoFile(videoFile);
+
+        if (thumbnailFile) {
+          this.validateImageFile(thumbnailFile);
+        }
+
+        const videos = JSON.parse(localStorage.getItem('lamatube_videos')) || [];
+        const users = JSON.parse(localStorage.getItem('lamatube_users')) || [];
+
+        let thumbnailData = null;
+        if (thumbnailFile) {
+          thumbnailData = await this.fileToDataURL(thumbnailFile);
+        }
+
+        const videoData = await this.fileToDataURL(videoFile);
+
+        const newVideo = {
+          id: Date.now(),
+          title,
+          description,
+          category,
+          videoData,
+          thumbnailData,
+          userId: currentUser.id,
+          username: currentUser.username,
+          userAvatar: currentUser.avatar,
+          views: 0,
+          likes: 0,
+          dislikes: 0,
+          comments: [],
+          uploadDate: new Date().toISOString(),
+          duration: await this.getVideoDuration(videoFile),
+          watchHistory: {},
+          tags: [],
+          privacy: privacy,
+          fileSize: videoFile.size,
+          mimeType: videoFile.type,
+          lastAccessed: null
+        };
+
+        videos.push(newVideo);
+        localStorage.setItem('lamatube_videos', JSON.stringify(videos));
+
+        const userIndex = users.findIndex(u => u.id === currentUser.id);
+        if (userIndex !== -1) {
+          if (!users[userIndex].videos) users[userIndex].videos = [];
+          users[userIndex].videos.push(newVideo.id);
+          localStorage.setItem('lamatube_users', JSON.stringify(users));
+        }
+
+        const videoAccess = JSON.parse(localStorage.getItem('lamatube_video_access')) || {};
+        videoAccess[newVideo.id] = {
+          owner: currentUser.id,
+          allowedUsers: [],
+          privacy: privacy
+        };
+        localStorage.setItem('lamatube_video_access', JSON.stringify(videoAccess));
+
+        return newVideo;
+      }
+
+      updateVideoPrivacy(videoId, privacy) {
+        const videos = JSON.parse(localStorage.getItem('lamatube_videos')) || [];
+        const videoIndex = videos.findIndex(v => v.id === videoId);
+
+        if (videoIndex !== -1) {
+          videos[videoIndex].privacy = privacy;
+          localStorage.setItem('lamatube_videos', JSON.stringify(videos));
+
+          const videoAccess = JSON.parse(localStorage.getItem('lamatube_video_access')) || {};
+          if (videoAccess[videoId]) {
+            videoAccess[videoId].privacy = privacy;
+            localStorage.setItem('lamatube_video_access', JSON.stringify(videoAccess));
+          }
+          return { success: true, video: videos[videoIndex] };
+        }
+        return { success: false, message: 'Video not found' };
+      }
+
+      deleteVideo(videoId) {
+        const currentUser = this.getCurrentUser();
+        if (!currentUser) return { success: false, message: 'Authentication required' };
+
+        const videos = JSON.parse(localStorage.getItem('lamatube_videos')) || [];
+        const videoIndex = videos.findIndex(v => v.id === videoId);
+
+        if (videoIndex === -1) {
+          return { success: false, message: 'Video not found' };
+        }
+
+        if (videos[videoIndex].userId !== currentUser.id) {
+          return { success: false, message: 'You can only delete your own videos' };
+        }
+
+        videos.splice(videoIndex, 1);
+        localStorage.setItem('lamatube_videos', JSON.stringify(videos));
+
+        const users = JSON.parse(localStorage.getItem('lamatube_users')) || [];
+        const userIndex = users.findIndex(u => u.id === currentUser.id);
+        if (userIndex !== -1) {
+          users[userIndex].videos = users[userIndex].videos.filter(id => id !== videoId);
+          localStorage.setItem('lamatube_users', JSON.stringify(users));
+        }
+
+        const videoAccess = JSON.parse(localStorage.getItem('lamatube_video_access')) || {};
+        delete videoAccess[videoId];
+        localStorage.setItem('lamatube_video_access', JSON.stringify(videoAccess));
+
+        return { success: true };
+      }
+
+      getVideoById(id) {
+        const videos = JSON.parse(localStorage.getItem('lamatube_videos')) || [];
+        const video = videos.find(v => v.id === id);
+
+        if (!video) return null;
+
+        const currentUser = this.getCurrentUser();
+        if (video.privacy === 'private' && (!currentUser || video.userId !== currentUser.id)) {
+          return null;
+        }
+
+        return video;
+      }
+
+      getVideos(filter = 'all') {
+        const videos = JSON.parse(localStorage.getItem('lamatube_videos')) || [];
+        const currentUser = this.getCurrentUser();
+
+        let filteredVideos = videos;
+
+        if (currentUser) {
+          filteredVideos = videos.filter(video =>
+            video.privacy === 'public' || video.userId === currentUser.id
+          );
+        } else {
+          filteredVideos = videos.filter(video => video.privacy === 'public');
+        }
+
+        switch(filter) {
+          case 'trending':
+            return [...filteredVideos].sort((a, b) => b.views - a.views);
+          case 'newest':
+            return [...filteredVideos].sort((a, b) => new Date(b.uploadDate) - new Date(a.uploadDate));
+          case 'subscribed':
+            if (!currentUser) return [];
+            const subscriptions = this.getUserSubscriptions(currentUser.id);
+            return filteredVideos.filter(v => subscriptions.includes(v.userId))
+              .sort((a, b) => new Date(b.uploadDate) - new Date(a.uploadDate));
+          default:
+            return filteredVideos;
+        }
+      }
+
+      getUserVideos(userId) {
+        const videos = JSON.parse(localStorage.getItem('lamatube_videos')) || [];
+        return videos.filter(v => v.userId === userId);
+      }
+
+      // ================== LIKE MANAGEMENT ==================
+      likeVideo(userId, videoId) {
+        const likes = JSON.parse(localStorage.getItem('lamatube_likes')) || {};
+        const videos = JSON.parse(localStorage.getItem('lamatube_videos')) || [];
+
+        if (!likes[userId]) likes[userId] = {};
+
+        const currentStatus = likes[userId][videoId];
+        const videoIndex = videos.findIndex(v => v.id === videoId);
+
+        if (videoIndex === -1) return false;
+
+        if (currentStatus === 'like') {
+          delete likes[userId][videoId];
+          videos[videoIndex].likes = Math.max(0, videos[videoIndex].likes - 1);
+        } else {
+          if (currentStatus === 'dislike') {
+            videos[videoIndex].dislikes = Math.max(0, videos[videoIndex].dislikes - 1);
+          }
+          likes[userId][videoId] = 'like';
+          videos[videoIndex].likes = (videos[videoIndex].likes || 0) + 1;
+        }
+
+        localStorage.setItem('lamatube_likes', JSON.stringify(likes));
+        localStorage.setItem('lamatube_videos', JSON.stringify(videos));
+        return true;
+      }
+
+      dislikeVideo(userId, videoId) {
+        const likes = JSON.parse(localStorage.getItem('lamatube_likes')) || {};
+        const videos = JSON.parse(localStorage.getItem('lamatube_videos')) || [];
+
+        if (!likes[userId]) likes[userId] = {};
+
+        const currentStatus = likes[userId][videoId];
+        const videoIndex = videos.findIndex(v => v.id === videoId);
+
+        if (videoIndex === -1) return false;
+
+        if (currentStatus === 'dislike') {
+          delete likes[userId][videoId];
+          videos[videoIndex].dislikes = Math.max(0, videos[videoIndex].dislikes - 1);
+        } else {
+          if (currentStatus === 'like') {
+            videos[videoIndex].likes = Math.max(0, videos[videoIndex].likes - 1);
+          }
+          likes[userId][videoId] = 'dislike';
+          videos[videoIndex].dislikes = (videos[videoIndex].dislikes || 0) + 1;
+        }
+
+        localStorage.setItem('lamatube_likes', JSON.stringify(likes));
+        localStorage.setItem('lamatube_videos', JSON.stringify(videos));
+        return true;
+      }
+
+      getUserLikeStatus(userId, videoId) {
+        const likes = JSON.parse(localStorage.getItem('lamatube_likes')) || {};
+        return likes[userId]?.[videoId] || null;
+      }
+
+      // ================== COMMENT LIKE MANAGEMENT ==================
+      likeComment(userId, commentId) {
+        const commentLikes = JSON.parse(localStorage.getItem('lamatube_comment_likes')) || {};
+        const comments = JSON.parse(localStorage.getItem('lamatube_comments')) || {};
+
+        if (!commentLikes[userId]) commentLikes[userId] = {};
+
+        // Find the comment
+        let targetComment = null;
+        let videoId = null;
+        let commentIndex = -1;
+
+        for (const vid in comments) {
+          const idx = comments[vid].findIndex(c => c.id === commentId);
+          if (idx !== -1) {
+            targetComment = comments[vid][idx];
+            videoId = vid;
+            commentIndex = idx;
+            break;
+          }
+        }
+
+        if (!targetComment) return false;
+
+        const currentStatus = commentLikes[userId][commentId];
+
+        if (currentStatus === 'like') {
+          delete commentLikes[userId][commentId];
+          targetComment.likes = Math.max(0, targetComment.likes - 1);
+        } else {
+          if (currentStatus === 'dislike') {
+            targetComment.dislikes = Math.max(0, targetComment.dislikes - 1);
+          }
+          commentLikes[userId][commentId] = 'like';
+          targetComment.likes = (targetComment.likes || 0) + 1;
+        }
+
+        // Update the comment
+        if (videoId !== null && commentIndex !== -1) {
+          comments[videoId][commentIndex] = targetComment;
+        }
+
+        localStorage.setItem('lamatube_comment_likes', JSON.stringify(commentLikes));
+        localStorage.setItem('lamatube_comments', JSON.stringify(comments));
+        return true;
+      }
+
+      dislikeComment(userId, commentId) {
+        const commentLikes = JSON.parse(localStorage.getItem('lamatube_comment_likes')) || {};
+        const comments = JSON.parse(localStorage.getItem('lamatube_comments')) || {};
+
+        if (!commentLikes[userId]) commentLikes[userId] = {};
+
+        // Find the comment
+        let targetComment = null;
+        let videoId = null;
+        let commentIndex = -1;
+
+        for (const vid in comments) {
+          const idx = comments[vid].findIndex(c => c.id === commentId);
+          if (idx !== -1) {
+            targetComment = comments[vid][idx];
+            videoId = vid;
+            commentIndex = idx;
+            break;
+          }
+        }
+
+        if (!targetComment) return false;
+
+        const currentStatus = commentLikes[userId][commentId];
+
+        if (currentStatus === 'dislike') {
+          delete commentLikes[userId][commentId];
+          targetComment.dislikes = Math.max(0, targetComment.dislikes - 1);
+        } else {
+          if (currentStatus === 'like') {
+            targetComment.likes = Math.max(0, targetComment.likes - 1);
+          }
+          commentLikes[userId][commentId] = 'dislike';
+          targetComment.dislikes = (targetComment.dislikes || 0) + 1;
+        }
+
+        // Update the comment
+        if (videoId !== null && commentIndex !== -1) {
+          comments[videoId][commentIndex] = targetComment;
+        }
+
+        localStorage.setItem('lamatube_comment_likes', JSON.stringify(commentLikes));
+        localStorage.setItem('lamatube_comments', JSON.stringify(comments));
+        return true;
+      }
+
+      getUserCommentLikeStatus(userId, commentId) {
+        const commentLikes = JSON.parse(localStorage.getItem('lamatube_comment_likes')) || {};
+        return commentLikes[userId]?.[commentId] || null;
+      }
+
+      getCommentById(commentId) {
+        const comments = JSON.parse(localStorage.getItem('lamatube_comments')) || {};
+        for (const videoId in comments) {
+          const comment = comments[videoId].find(c => c.id === commentId);
+          if (comment) return comment;
+        }
+        return null;
+      }
+
+      // ================== SUBSCRIPTION MANAGEMENT ==================
+      subscribe(userId, channelId) {
+        const subscriptions = JSON.parse(localStorage.getItem('lamatube_subscriptions')) || {};
+        if (!subscriptions[userId]) subscriptions[userId] = [];
+
+        if (!subscriptions[userId].includes(channelId)) {
+          subscriptions[userId].push(channelId);
+          localStorage.setItem('lamatube_subscriptions', JSON.stringify(subscriptions));
+
+          const users = JSON.parse(localStorage.getItem('lamatube_users')) || [];
+          const userIndex = users.findIndex(u => u.id === channelId);
+          if (userIndex !== -1) {
+            users[userIndex].subscribers = (users[userIndex].subscribers || 0) + 1;
+            localStorage.setItem('lamatube_users', JSON.stringify(users));
+          }
+
+          // Track subscriber history
+          const subHistory = JSON.parse(localStorage.getItem('lamatube_subscriber_history')) || {};
+          if (!subHistory[channelId]) subHistory[channelId] = [];
+          subHistory[channelId].push({
+            date: new Date().toISOString().split('T')[0],
+            count: users[userIndex]?.subscribers || 0
+          });
+          localStorage.setItem('lamatube_subscriber_history', JSON.stringify(subHistory));
+
+          return true;
+        }
+        return false;
+      }
+
+      unsubscribe(userId, channelId) {
+        const subscriptions = JSON.parse(localStorage.getItem('lamatube_subscriptions')) || {};
+        if (subscriptions[userId]) {
+          const index = subscriptions[userId].indexOf(channelId);
+          if (index > -1) {
+            subscriptions[userId].splice(index, 1);
+            localStorage.setItem('lamatube_subscriptions', JSON.stringify(subscriptions));
+
+            const users = JSON.parse(localStorage.getItem('lamatube_users')) || [];
+            const userIndex = users.findIndex(u => u.id === channelId);
+            if (userIndex !== -1) {
+              users[userIndex].subscribers = Math.max(0, (users[userIndex].subscribers || 0) - 1);
+              localStorage.setItem('lamatube_users', JSON.stringify(users));
+            }
+
+            // Track subscriber history
+            const subHistory = JSON.parse(localStorage.getItem('lamatube_subscriber_history')) || {};
+            if (!subHistory[channelId]) subHistory[channelId] = [];
+            subHistory[channelId].push({
+              date: new Date().toISOString().split('T')[0],
+              count: users[userIndex]?.subscribers || 0
+            });
+            localStorage.setItem('lamatube_subscriber_history', JSON.stringify(subHistory));
+
+            return true;
+          }
+        }
+        return false;
+      }
+
+      isSubscribed(userId, channelId) {
+        const subscriptions = JSON.parse(localStorage.getItem('lamatube_subscriptions')) || {};
+        return subscriptions[userId] ? subscriptions[userId].includes(channelId) : false;
+      }
+
+      getUserSubscriptions(userId) {
+        const subscriptions = JSON.parse(localStorage.getItem('lamatube_subscriptions')) || {};
+        return subscriptions[userId] || [];
+      }
+
+      // ================== ANALYTICS DATA ==================
+      getChannelAnalytics(userId, period = '30d') {
+        const analytics = JSON.parse(localStorage.getItem('lamatube_analytics')) || {};
+        const userAnalytics = analytics[userId] || {};
+        
+        // Get dates for the period
+        const dates = [];
+        const endDate = new Date();
+        let startDate = new Date();
+        
+        switch(period) {
+          case '7d':
+            startDate.setDate(startDate.getDate() - 7);
+            break;
+          case '30d':
+            startDate.setDate(startDate.getDate() - 30);
+            break;
+          case '90d':
+            startDate.setDate(startDate.getDate() - 90);
+            break;
+          default:
+            startDate.setDate(startDate.getDate() - 30);
+        }
+        
+        // Generate date range
+        for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+          const dateStr = d.toISOString().split('T')[0];
+          dates.push(dateStr);
+        }
+        
+        // Prepare data
+        const viewsData = [];
+        const subsHistory = JSON.parse(localStorage.getItem('lamatube_subscriber_history')) || {};
+        const channelSubs = subsHistory[userId] || [];
+        
+        // Get latest subscriber count for each day
+        const subsByDate = {};
+        channelSubs.forEach(record => {
+          subsByDate[record.date] = record.count;
+        });
+        
+        const subsData = [];
+        let lastSubCount = 0;
+        
+        dates.forEach(date => {
+          // Views data
+          const dayAnalytics = userAnalytics[date] || { views: 0, watchTime: 0 };
+          viewsData.push({ x: date, y: dayAnalytics.views || 0 });
+          
+          // Subs data - use the latest count available for that date
+          if (subsByDate[date]) {
+            lastSubCount = subsByDate[date];
+          }
+          subsData.push({ x: date, y: lastSubCount });
+        });
+        
+        return { viewsOverTime: viewsData, subsOverTime: subsData };
+      }
+
+      // --- HELPER METHODS ---
+      validateVideoFile(file) {
+        const validTypes = ['video/mp4', 'video/webm', 'video/ogg'];
+        const maxSize = 50 * 1024 * 1024;
+
+        if (!validTypes.includes(file.type)) {
+          throw new Error('Invalid video format. Please use MP4, WebM, or OGG.');
+        }
+
+        if (file.size > maxSize) {
+          throw new Error('Video file is too large. Maximum size is 50MB.');
+        }
+
+        return true;
+      }
+
+      validateImageFile(file) {
+        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+        const maxSize = 5 * 1024 * 1024;
+
+        if (!validTypes.includes(file.type)) {
+          throw new Error('Invalid image format. Please use JPEG, PNG, or GIF.');
+        }
+
+        if (file.size > maxSize) {
+          throw new Error('Image file is too large. Maximum size is 5MB.');
+        }
+
+        return true;
+      }
+
+      async fileToDataURL(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+      }
+
+      async getVideoDuration(file) {
+        return new Promise((resolve) => {
+          const video = document.createElement('video');
+          video.preload = 'metadata';
+
+          video.onloadedmetadata = () => {
+            resolve(Math.round(video.duration));
+            URL.revokeObjectURL(video.src);
+          };
+
+          video.onerror = () => {
+            resolve(0);
+            URL.revokeObjectURL(video.src);
+          };
+
+          video.src = URL.createObjectURL(file);
+        });
+      }
+
+      getRandomColor() {
+        const colors = ['#ff6b6b', '#4ecdc4', '#ffd166', '#06d6a0', '#118ab2', '#ef476f', '#073b4c', '#7209b7'];
+        return colors[Math.floor(Math.random() * colors.length)];
+      }
+
+      initUserData(userId) {
+        const history = JSON.parse(localStorage.getItem('lamatube_history')) || {};
+        const watchLater = JSON.parse(localStorage.getItem('lamatube_watchlater')) || {};
+        const subscriptions = JSON.parse(localStorage.getItem('lamatube_subscriptions')) || {};
+        const likes = JSON.parse(localStorage.getItem('lamatube_likes')) || {};
+        const commentLikes = JSON.parse(localStorage.getItem('lamatube_comment_likes')) || {};
+
+        if (!history[userId]) history[userId] = [];
+        if (!watchLater[userId]) watchLater[userId] = [];
+        if (!subscriptions[userId]) subscriptions[userId] = [];
+        if (!likes[userId]) likes[userId] = {};
+        if (!commentLikes[userId]) commentLikes[userId] = {};
+
+        localStorage.setItem('lamatube_history', JSON.stringify(history));
+        localStorage.setItem('lamatube_watchlater', JSON.stringify(watchLater));
+        localStorage.setItem('lamatube_subscriptions', JSON.stringify(subscriptions));
+        localStorage.setItem('lamatube_likes', JSON.stringify(likes));
+        localStorage.setItem('lamatube_comment_likes', JSON.stringify(commentLikes));
+      }
+
+      clearAllData() {
+        const keys = Object.keys(localStorage).filter(key => key.startsWith('lamatube_'));
+        keys.forEach(key => localStorage.removeItem(key));
+        this.initDB();
+        return { success: true };
+      }
+
+      getComments(videoId) {
+        const comments = JSON.parse(localStorage.getItem('lamatube_comments')) || {};
+        return comments[videoId] || [];
+      }
+
+      addComment(videoId, userId, text) {
+        const comments = JSON.parse(localStorage.getItem('lamatube_comments')) || {};
+        const users = JSON.parse(localStorage.getItem('lamatube_users')) || [];
+        const user = users.find(u => u.id === userId);
+
+        if (!user) return null;
+
+        if (!comments[videoId]) comments[videoId] = [];
+
+        const newComment = {
+          id: Date.now(),
+          videoId,
+          userId,
+          username: user.username,
+          userAvatar: user.avatar,
+          text,
+          likes: 0,
+          dislikes: 0,
+          createdAt: new Date().toISOString()
+        };
+
+        comments[videoId].push(newComment);
+        localStorage.setItem('lamatube_comments', JSON.stringify(comments));
+
+        return newComment;
+      }
+
+      addView(videoId, watchedSeconds = 0) {
+        const videos = JSON.parse(localStorage.getItem('lamatube_videos')) || [];
+        const videoIndex = videos.findIndex(v => v.id === videoId);
+
+        if (videoIndex !== -1) {
+          videos[videoIndex].views++;
+          const today = new Date().toISOString().split('T')[0];
+          if (!videos[videoIndex].watchHistory) videos[videoIndex].watchHistory = {};
+          if (!videos[videoIndex].watchHistory[today]) {
+            videos[videoIndex].watchHistory[today] = 0;
+          }
+          videos[videoIndex].watchHistory[today] += watchedSeconds;
+
+          localStorage.setItem('lamatube_videos', JSON.stringify(videos));
+
+          const currentUser = this.getCurrentUser();
+          if (currentUser && currentUser.preferences?.privacy?.saveHistory &&
+              !currentUser.preferences?.privacy?.pauseHistory) {
+            const totalSeconds = videos[videoIndex].duration || 0;
+            this.addToHistory(currentUser.id, videoId, watchedSeconds, totalSeconds);
+          }
+
+          this.updateAnalytics(videos[videoIndex].userId, watchedSeconds);
+
+          return videos[videoIndex].views;
+        }
+        return 0;
+      }
+
+      addToHistory(userId, videoId, watchedSeconds, totalSeconds) {
+        const history = JSON.parse(localStorage.getItem('lamatube_history')) || {};
+        if (!history[userId]) history[userId] = [];
+
+        const existingIndex = history[userId].findIndex(h => h.videoId === videoId);
+        const historyEntry = {
+          videoId,
+          watchedAt: new Date().toISOString(),
+          watchedSeconds,
+          totalSeconds,
+          completion: totalSeconds > 0 ? (watchedSeconds / totalSeconds) : 0
+        };
+
+        if (existingIndex !== -1) {
+          history[userId][existingIndex] = historyEntry;
+        } else {
+          history[userId].unshift(historyEntry);
+        }
+
+        if (history[userId].length > 100) {
+          history[userId] = history[userId].slice(0, 100);
+        }
+
+        localStorage.setItem('lamatube_history', JSON.stringify(history));
+      }
+
+      clearHistory(userId) {
+        const history = JSON.parse(localStorage.getItem('lamatube_history')) || {};
+        if (history[userId]) {
+          history[userId] = [];
+          localStorage.setItem('lamatube_history', JSON.stringify(history));
+          return true;
+        }
+        return false;
+      }
+
+      updateAnalytics(userId, watchTime) {
+        const analytics = JSON.parse(localStorage.getItem('lamatube_analytics')) || {};
+        if (!analytics[userId]) analytics[userId] = {};
+        const today = new Date().toISOString().split('T')[0];
+        if (!analytics[userId][today]) {
+          analytics[userId][today] = {
+            views: 0,
+            watchTime: 0,
+            revenue: 0
+          };
+        }
+
+        analytics[userId][today].views++;
+        analytics[userId][today].watchTime += watchTime;
+        analytics[userId][today].revenue += (watchTime / 3600) * 0.5;
+
+        localStorage.setItem('lamatube_analytics', JSON.stringify(analytics));
+      }
+
+      getUserStats(userId) {
+        const videos = this.getUserVideos(userId);
+        const totalViews = videos.reduce((sum, video) => sum + (video.views || 0), 0);
+        const totalLikes = videos.reduce((sum, video) => sum + (video.likes || 0), 0);
+        const totalVideos = videos.length;
+        const totalWatchTime = videos.reduce((sum, video) => {
+          if (video.watchHistory) {
+            return sum + Object.values(video.watchHistory).reduce((a, b) => a + b, 0);
+          }
+          return sum;
+        }, 0);
+
+        return {
+          totalViews,
+          totalLikes,
+          totalVideos,
+          totalWatchTime: Math.round(totalWatchTime / 60),
+          subscribers: this.getUserById(userId)?.subscribers || 0
+        };
+      }
+
+      getContinueWatching(userId) {
+        const history = this.getHistory(userId);
+        const allVideos = this.getVideos();
+        return history
+          .map(entry => {
+            const video = allVideos.find(v => v.id === entry.videoId);
+            if (!video) return null;
+            return {
+              video,
+              lastPosition: entry.watchedSeconds,
+              totalDuration: entry.totalSeconds,
+              completion: entry.completion
+            };
+          })
+          .filter(item => item && item.completion < 0.9)
+          .slice(0, 5);
+      }
+
+      getHistory(userId) {
+        const history = JSON.parse(localStorage.getItem('lamatube_history')) || {};
+        return history[userId] || [];
+      }
+
+      getSettings(userId) {
+        const settings = JSON.parse(localStorage.getItem('lamatube_settings')) || {};
+        if (userId) {
+          return settings[userId] || {};
+        }
+        return settings.global || {};
+      }
+
+      saveSettings(userId, newSettings) {
+        const settings = JSON.parse(localStorage.getItem('lamatube_settings')) || {};
+        if (userId) {
+          settings[userId] = { ...settings[userId], ...newSettings };
+        } else {
+          settings.global = { ...settings.global, ...newSettings };
+        }
+        localStorage.setItem('lamatube_settings', JSON.stringify(settings));
+        return true;
+      }
+    }
+
+    // Main Application Class
+    class LamaTubeApp {
+      constructor() {
+        this.db = new LamaTubeDB();
+        this.currentPage = 'home';
+        this.currentVideo = null;
+        this.videoPlayer = null;
+        this.watchInterval = null;
+        this.watchedSeconds = 0;
+        this.videoStartTime = null;
+        this.adCount = 0;
+        this.analyticsPeriod = '30d';
+        this.videoSortType = 'views';
+        this.initEventListeners();
+        this.applyTheme();
+        this.checkAuthStatus();
+        this.loadPage('home');
+      }
+
+      initEventListeners() {
+        // Header buttons
+        document.getElementById('hamburgerMenu').addEventListener('click', () => {
+          document.getElementById('sidebar').classList.toggle('active');
+        });
+
+        document.getElementById('homeBtn').addEventListener('click', () => {
+          this.loadPage('home');
+        });
+
+        document.getElementById('uploadBtn').addEventListener('click', () => {
+          if (this.db.getCurrentUser()) {
+            document.getElementById('uploadModal').classList.add('active');
+            document.getElementById('uploadForm').reset();
+            document.getElementById('uploadProgress').style.display = 'none';
+          } else {
+            this.showNotification('Please login to upload videos', 'error');
+            document.getElementById('authModal').classList.add('active');
+          }
+        });
+
+        // User dropdown menu
+        document.getElementById('userMenuBtn').addEventListener('click', (e) => {
+          e.stopPropagation();
+          const dropdown = document.getElementById('userDropdown');
+          dropdown.classList.toggle('active');
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+          const dropdown = document.getElementById('userDropdown');
+          const userBtn = document.getElementById('userMenuBtn');
+          if (!dropdown.contains(e.target) && !userBtn.contains(e.target)) {
+            dropdown.classList.remove('active');
+          }
+        });
+
+        // Dropdown items
+        document.getElementById('viewAccountBtn').addEventListener('click', () => {
+          document.getElementById('userDropdown').classList.remove('active');
+          this.showAccountModal();
+        });
+
+        document.getElementById('openSettingsBtn').addEventListener('click', () => {
+          document.getElementById('userDropdown').classList.remove('active');
+          this.showSettingsModal();
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+          document.getElementById('userDropdown').classList.remove('active');
+          this.handleLogout();
+        });
+
+        // Search
+        document.getElementById('searchBtn').addEventListener('click', () => {
+          this.searchVideos();
+        });
+
+        document.getElementById('searchInput').addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') {
+            this.searchVideos();
+          }
+        });
+
+        // Sidebar items
+        document.querySelectorAll('.sidebar-item').forEach(item => {
+          if (!item.id) {
+            item.addEventListener('click', (e) => {
+              if (e.target.closest('.sidebar-item')) {
+                const page = e.target.closest('.sidebar-item').dataset.page;
+                this.loadPage(page);
+              }
+            });
+          }
+        });
+
+        // Auth modal
+        document.getElementById('closeAuthModal').addEventListener('click', () => {
+          document.getElementById('authModal').classList.remove('active');
+        });
+
+        document.getElementById('switchToRegister').addEventListener('click', () => {
+          this.showRegisterForm();
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+          e.preventDefault();
+          this.handleLogin();
+        });
+
+        // Upload modal
+        document.getElementById('closeUploadModal').addEventListener('click', () => {
+          document.getElementById('uploadModal').classList.remove('active');
+        });
+
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          await this.handleUpload();
+        });
+
+        // Account modal
+        document.getElementById('closeAccountModal').addEventListener('click', () => {
+          document.getElementById('accountModal').classList.remove('active');
+        });
+
+        // Settings modal
+        document.getElementById('closeSettingsModal').addEventListener('click', () => {
+          document.getElementById('settingsModal').classList.remove('active');
+        });
+
+        // Settings tabs with scroll behavior
+        document.querySelectorAll('.settings-tab').forEach(tab => {
+          tab.addEventListener('click', (e) => {
+            e.preventDefault();
+            const tabName = tab.dataset.tab;
+            const targetElement = document.getElementById(tabName + 'Tab');
+            if (targetElement) {
+              document.querySelectorAll('.settings-tab').forEach(t =>
+                t.classList.remove('active'));
+              document.querySelectorAll('.settings-tab-content').forEach(c =>
+                c.classList.remove('active'));
+              tab.classList.add('active');
+              targetElement.classList.add('active');
+
+              targetElement.scrollIntoView({ behavior: 'smooth' });
+            }
+          });
+        });
+
+        // Settings scrolling to update active tab
+        const settingsContent = document.getElementById('settingsContent');
+        if (settingsContent) {
+          settingsContent.addEventListener('scroll', () => {
+            this.updateActiveSettingsTab();
+          });
+        }
+
+        // Theme selector
+        document.querySelectorAll('.theme-option').forEach(option => {
+          option.addEventListener('click', () => {
+            document.querySelectorAll('.theme-option').forEach(o =>
+              o.classList.remove('active'));
+            option.classList.add('active');
+            this.setTheme(option.dataset.theme);
+          });
+        });
+
+        // Settings toggles and selects
+        this.initSettingsListeners();
+
+        // Close modals when clicking outside
+        window.addEventListener('click', (e) => {
+          const modals = ['authModal', 'uploadModal', 'accountModal', 'settingsModal'];
+
+          modals.forEach(modalId => {
+            const modal = document.getElementById(modalId);
+            if (e.target === modal) {
+              modal.classList.remove('active');
+            }
+          });
+
+          // Close sidebar on mobile when clicking outside
+          if (window.innerWidth <= 768) {
+            const sidebar = document.getElementById('sidebar');
+            const hamburger = document.getElementById('hamburgerMenu');
+            if (sidebar.classList.contains('active') &&
+                !sidebar.contains(e.target) &&
+                !hamburger.contains(e.target)) {
+              sidebar.classList.remove('active');
+            }
+          }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', this.handleKeyboardShortcuts.bind(this));
+      }
+
+      initSettingsListeners() {
+        const settings = [
+          { id: 'saveHistoryToggle', path: 'privacy.saveHistory' },
+          { id: 'pauseHistoryToggle', path: 'privacy.pauseHistory' },
+          { id: 'publicLikesToggle', path: 'privacy.publicLikes' },
+          { id: 'publicSubscriptionsToggle', path: 'privacy.publicSubscriptions' },
+          { id: 'privateVideosToggle', path: 'privacy.privateVideos' },
+          { id: 'emailNotificationsToggle', path: 'notifications.email' },
+          { id: 'pushNotificationsToggle', path: 'notifications.push' },
+          { id: 'recommendationsToggle', path: 'notifications.recommendations' },
+          { id: 'subscriptionUpdatesToggle', path: 'notifications.subscriptionUpdates' },
+          { id: 'alwaysShowControls', path: 'interface.alwaysShowControls' },
+          { id: 'showAnnotations', path: 'interface.showAnnotations' },
+          { id: 'autoplayToggle', path: 'playback.autoplay' },
+          { id: 'alwaysHDToggle', path: 'playback.alwaysHD' },
+          { id: 'experimentalToggle', path: 'experimental' },
+          { id: 'developerModeToggle', path: 'developerMode' }
+        ];
+
+        settings.forEach(setting => {
+          const element = document.getElementById(setting.id);
+          if (element) {
+            element.addEventListener('change', (e) => {
+              this.saveUserPreference(setting.path, e.target.checked);
+            });
+          }
+        });
+
+        // Select elements
+        document.getElementById('defaultQuality')?.addEventListener('change', (e) => {
+          this.saveUserPreference('playback.quality', e.target.value);
+        });
+
+        document.getElementById('defaultSpeed')?.addEventListener('change', (e) => {
+          this.saveUserPreference('playback.speed', parseFloat(e.target.value));
+        });
+
+        // Clear history button
+        document.getElementById('clearHistoryBtn')?.addEventListener('click', () => {
+          if (confirm('Are you sure you want to clear all watch history? This cannot be undone.')) {
+            const user = this.db.getCurrentUser();
+            if (user) {
+              this.db.clearHistory(user.id);
+              this.showNotification('Watch history cleared', 'success');
+              this.loadPage('history');
+            }
+          }
+        });
+
+        // Clear everything button
+        document.getElementById('clearEverythingBtn')?.addEventListener('click', () => {
+          if (confirm('WARNING: This will delete ALL data including videos, channels, and user accounts. This cannot be undone! Are you sure?')) {
+            this.db.clearAllData();
+            this.showNotification('All data cleared', 'success');
+            setTimeout(() => {
+              window.location.reload();
+            }, 2000);
+          }
+        });
+
+        // Super secret button
+        document.getElementById('superSecretBtn')?.addEventListener('click', () => {
+          this.showSuperSecretSettings();
+        });
+      }
+
+      updateActiveSettingsTab() {
+        const settingsContent = document.getElementById('settingsContent');
+        const tabs = document.querySelectorAll('.settings-tab');
+
+        if (!settingsContent) return;
+
+        const scrollTop = settingsContent.scrollTop;
+        let activeTab = null;
+
+        tabs.forEach(tab => {
+          const tabName = tab.dataset.tab;
+          const targetElement = document.getElementById(tabName + 'Tab');
+          if (targetElement) {
+            const offsetTop = targetElement.offsetTop - 100;
+            const offsetBottom = offsetTop + targetElement.offsetHeight;
+
+            if (scrollTop >= offsetTop && scrollTop < offsetBottom) {
+              activeTab = tab;
+            }
+          }
+        });
+
+        if (activeTab) {
+          tabs.forEach(tab => tab.classList.remove('active'));
+          activeTab.classList.add('active');
+        }
+      }
+
+      applyTheme() {
+        const user = this.db.getCurrentUser();
+        let theme = 'light';
+
+        if (user) {
+          theme = user.preferences?.theme || 'light';
+        }
+
+        if (theme === 'dark' || (theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.body.classList.add('dark-mode');
+        } else {
+          document.body.classList.remove('dark-mode');
+        }
+
+        document.querySelectorAll('.theme-option').forEach(option => {
+          option.classList.remove('active');
+          if (option.dataset.theme === theme) {
+            option.classList.add('active');
+          }
+        });
+      }
+
+      setTheme(theme) {
+        const user = this.db.getCurrentUser();
+        if (user) {
+          this.db.updateUser(user.id, {
+            ...user,
+            preferences: {
+              ...user.preferences,
+              theme
+            }
+          });
+          this.applyTheme();
+        }
+      }
+
+      saveUserPreference(path, value) {
+        const user = this.db.getCurrentUser();
+        if (!user) return;
+
+        const paths = path.split('.');
+        let preferences = user.preferences;
+
+        for (let i = 0; i < paths.length - 1; i++) {
+          if (!preferences[paths[i]]) {
+            preferences[paths[i]] = {};
+          }
+          preferences = preferences[paths[i]];
+        }
+
+        preferences[paths[paths.length - 1]] = value;
+
+        this.db.updateUser(user.id, {
+          ...user,
+          preferences: user.preferences
+        });
+
+        this.showNotification('Settings saved', 'success');
+      }
+
+      checkAuthStatus() {
+        const currentUser = this.db.getCurrentUser();
+        const userInitial = document.getElementById('userInitial');
+
+        if (currentUser) {
+          userInitial.textContent = currentUser.username.charAt(0).toUpperCase();
+          this.updateSubscriptionsList();
+        } else {
+          userInitial.textContent = '?';
+        }
+      }
+
+      showRegisterForm() {
+        document.getElementById('authModalTitle').textContent = 'Register for LamaTube';
+        document.getElementById('loginForm').innerHTML = `
+          <div class="form-group">
+            <label class="form-label">Username *</label>
+            <input type="text" class="form-input" id="regUsername" required minlength="3" maxlength="20">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email *</label>
+            <input type="email" class="form-input" id="regEmail" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password * (min. 6 characters)</label>
+            <input type="password" class="form-input" id="regPassword" required minlength="6">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Confirm Password *</label>
+            <input type="password" class="form-input" id="regConfirmPassword" required minlength="6">
+          </div>
+          <button type="submit" class="btn btn-primary">Register</button>
+        `;
+        const form = document.getElementById('loginForm');
+        form.onsubmit = (e) => {
+          e.preventDefault();
+          this.handleRegister();
+        };
+        document.querySelector('.form-footer p').innerHTML =
+          'Already have an account? <span class="form-link" id="switchToLogin">Login</span>';
+        document.getElementById('switchToLogin').addEventListener('click', () => {
+          this.showLoginForm();
+        });
+      }
+
+      showLoginForm() {
+        document.getElementById('authModalTitle').textContent = 'Login to LamaTube';
+        document.getElementById('loginForm').innerHTML = `
+          <div class="form-group">
+            <label class="form-label">Username or Email</label>
+            <input type="text" class="form-input" id="loginUsername" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input type="password" class="form-input" id="loginPassword" required>
+          </div>
+          <button type="submit" class="btn btn-primary">Login</button>
+        `;
+
+        const form = document.getElementById('loginForm');
+        form.onsubmit = (e) => {
+          e.preventDefault();
+          this.handleLogin();
+        };
+
+        document.querySelector('.form-footer p').innerHTML =
+          "Don't have an account? <span class='form-link' id='switchToRegister'>Register</span>";
+
+        document.getElementById('switchToRegister').addEventListener('click', () => {
+          this.showRegisterForm();
+        });
+      }
+
+      async handleLogin() {
+        const identifier = document.getElementById('loginUsername').value;
+        const password = document.getElementById('loginPassword').value;
+
+        const result = this.db.loginUser(identifier, password);
+
+        if (result.success) {
+          this.showNotification('Login successful!', 'success');
+          document.getElementById('authModal').classList.remove('active');
+          this.checkAuthStatus();
+          this.applyTheme();
+          this.loadPage('home');
+        } else {
+          this.showNotification(result.message, 'error');
+        }
+      }
+
+      async handleRegister() {
+        const username = document.getElementById('regUsername').value;
+        const email = document.getElementById('regEmail').value;
+        const password = document.getElementById('regPassword').value;
+        const confirmPassword = document.getElementById('regConfirmPassword').value;
+
+        if (password !== confirmPassword) {
+          this.showNotification('Passwords do not match', 'error');
+          return;
+        }
+
+        const result = this.db.registerUser(username, email, password);
+
+        if (result.success) {
+          this.showNotification('Registration successful! Please login.', 'success');
+          this.showLoginForm();
+        } else {
+          this.showNotification(result.message, 'error');
+        }
+      }
+
+      handleLogout() {
+        this.db.logoutUser();
+        this.showNotification('Logged out successfully', 'success');
+        this.checkAuthStatus();
+        this.applyTheme();
+        this.loadPage('home');
+      }
+
+      async handleUpload() {
+        const currentUser = this.db.getCurrentUser();
+        if (!currentUser) {
+          this.showNotification('Please login to upload videos', 'error');
+          document.getElementById('uploadModal').classList.remove('active');
+          document.getElementById('authModal').classList.add('active');
+          return;
+        }
+
+        const title = document.getElementById('videoTitle').value.trim();
+        const description = document.getElementById('videoDescription').value.trim();
+        const category = document.getElementById('videoCategory').value;
+        const privacy = document.getElementById('videoPrivacy').value;
+        const videoFile = document.getElementById('videoFile').files[0];
+        const thumbnailFile = document.getElementById('thumbnailFile').files[0];
+
+        if (!title || !videoFile) {
+          this.showNotification('Please fill in all required fields', 'error');
+          return;
+        }
+
+        const uploadBtn = document.getElementById('uploadSubmitBtn');
+        const originalText = uploadBtn.innerHTML;
+        uploadBtn.disabled = true;
+        uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+
+        const progressElement = document.getElementById('uploadProgress');
+        const progressFill = document.getElementById('uploadProgressFill');
+        const progressStatus = document.getElementById('uploadStatus');
+        progressElement.style.display = 'block';
+        progressFill.style.width = '0%';
+        progressStatus.textContent = '0%';
+
+        try {
+          let progress = 0;
+          const progressInterval = setInterval(() => {
+            if (progress < 90) {
+              progress += 10;
+              progressFill.style.width = progress + '%';
+              progressStatus.textContent = progress + '%';
+            }
+          }, 300);
+
+          const video = await this.db.uploadVideo(
+            title,
+            description,
+            category,
+            videoFile,
+            thumbnailFile,
+            privacy
+          );
+          clearInterval(progressInterval);
+
+          progressFill.style.width = '100%';
+          progressStatus.textContent = '100%';
+
+          setTimeout(() => {
+            this.showNotification('Video uploaded successfully!', 'success');
+            document.getElementById('uploadModal').classList.remove('active');
+            document.getElementById('uploadForm').reset();
+            progressElement.style.display = 'none';
+
+            uploadBtn.disabled = false;
+            uploadBtn.innerHTML = originalText;
+
+            if (this.currentPage === 'yourchannel' || this.currentPage === 'home') {
+              this.loadPage(this.currentPage);
+            }
+          }, 500);
+
+        } catch (error) {
+          console.error("Upload error:", error);
+          this.showNotification(error.message || 'Error uploading video. Please try again.', 'error');
+          uploadBtn.disabled = false;
+          uploadBtn.innerHTML = originalText;
+          document.getElementById('uploadProgress').style.display = 'none';
+        }
+      }
+
+      showAccountModal() {
+        const user = this.db.getCurrentUser();
+        if (!user) {
+          document.getElementById('authModal').classList.add('active');
+          return;
+        }
+
+        const stats = this.db.getUserStats(user.id);
+        const videos = this.db.getUserVideos(user.id);
+
+        const html = `
+          <div class="account-info">
+            <div class="account-avatar">
+              ${user.avatar ? 
+                `<img src="${user.avatar}" alt="${user.username}">` : 
+                `<span>${user.username.charAt(0).toUpperCase()}</span>`}
+            </div>
+            <div class="account-details">
+              <h2>${user.username}</h2>
+              <p>${user.email}</p>
+              <p>Member since ${new Date(user.createdAt).toLocaleDateString()}</p>
+              <div class="account-stats">
+                <div class="account-stat">
+                  <div class="account-stat-value">${stats.totalVideos}</div>
+                  <div class="account-stat-label">Videos</div>
+                </div>
+                <div class="account-stat">
+                  <div class="account-stat-value">${stats.totalViews.toLocaleString()}</div>
+                  <div class="account-stat-label">Views</div>
+                </div>
+                <div class="account-stat">
+                  <div class="account-stat-value">${stats.subscribers.toLocaleString()}</div>
+                  <div class="account-stat-label">Subscribers</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <h3>Account Information</h3>
+            <div class="setting-item">
+              <span>Username</span>
+              <span>${user.username}</span>
+            </div>
+            <div class="setting-item">
+              <span>Email</span>
+              <span>${user.email}</span>
+            </div>
+            <div class="setting-item">
+              <span>Last Login</span>
+              <span>${new Date(user.lastLogin).toLocaleString()}</span>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <h3>Change Password</h3>
+            <div class="form-group">
+              <label class="form-label">Current Password</label>
+              <input type="password" class="form-input" id="currentPassword">
+            </div>
+            <div class="form-group">
+              <label class="form-label">New Password</label>
+              <input type="password" class="form-input" id="newPassword">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Confirm New Password</label>
+              <input type="password" class="form-input" id="confirmNewPassword">
+            </div>
+            <button class="btn btn-primary" id="changePasswordBtn">Change Password</button>
+          </div>
+
+          <div class="settings-section">
+            <h3>Channel Statistics</h3>
+            <div class="setting-item">
+              <span>Total Videos</span>
+              <span>${stats.totalVideos}</span>
+            </div>
+            <div class="setting-item">
+              <span>Total Views</span>
+              <span>${stats.totalViews.toLocaleString()}</span>
+            </div>
+            <div class="setting-item">
+              <span>Total Likes</span>
+              <span>${stats.totalLikes.toLocaleString()}</span>
+            </div>
+            <div class="setting-item">
+              <span>Total Watch Time</span>
+              <span>${stats.totalWatchTime.toLocaleString()} minutes</span>
+            </div>
+            <div class="setting-item">
+              <span>Subscribers</span>
+              <span>${stats.subscribers.toLocaleString()}</span>
+            </div>
+          </div>
+
+          <button class="btn btn-danger" id="deleteAccountBtn" style="margin-top: 30px;">
+            <i class="fas fa-trash"></i> Delete Account
+          </button>
+        `;
+
+        document.getElementById('accountContent').innerHTML = html;
+        document.getElementById('accountModal').classList.add('active');
+
+        document.getElementById('changePasswordBtn')?.addEventListener('click', () => {
+          this.handleChangePassword();
+        });
+
+        document.getElementById('deleteAccountBtn')?.addEventListener('click', () => {
+          if (confirm('Are you sure you want to delete your account? This action cannot be undone and all your data will be lost.')) {
+            const currentUser = this.db.getCurrentUser();
+            if (currentUser) {
+              this.db.deleteUser(currentUser.id);
+              this.db.logoutUser();
+              this.showNotification('Account deleted', 'success');
+              setTimeout(() => {
+                window.location.reload();
+              }, 2000);
+            }
+          }
+        });
+      }
+
+      handleChangePassword() {
+        const currentUser = this.db.getCurrentUser();
+        if (!currentUser) return;
+
+        const currentPassword = document.getElementById('currentPassword').value;
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+
+        if (!currentPassword || !newPassword || !confirmNewPassword) {
+          this.showNotification('Please fill in all password fields', 'error');
+          return;
+        }
+        if (newPassword !== confirmNewPassword) {
+          this.showNotification('New passwords do not match', 'error');
+          return;
+        }
+        const result = this.db.changePassword(currentUser.id, currentPassword, newPassword);
+        if (result.success) {
+          this.showNotification(result.message || 'Password changed successfully', 'success');
+          document.getElementById('currentPassword').value = '';
+          document.getElementById('newPassword').value = '';
+          document.getElementById('confirmNewPassword').value = '';
+        } else {
+          this.showNotification(result.message, 'error');
+        }
+      }
+
+      showSettingsModal() {
+        const user = this.db.getCurrentUser();
+        if (!user) return;
+
+        // Load user preferences into settings controls
+        if (user.preferences) {
+          document.getElementById('saveHistoryToggle').checked = user.preferences.privacy?.saveHistory ?? true;
+          document.getElementById('pauseHistoryToggle').checked = user.preferences.privacy?.pauseHistory ?? false;
+          document.getElementById('publicLikesToggle').checked = user.preferences.privacy?.publicLikes ?? true;
+          document.getElementById('publicSubscriptionsToggle').checked = user.preferences.privacy?.publicSubscriptions ?? true;
+          document.getElementById('privateVideosToggle').checked = user.preferences.privacy?.privateVideos ?? false;
+          document.getElementById('emailNotificationsToggle').checked = user.preferences.notifications?.email ?? true;
+          document.getElementById('pushNotificationsToggle').checked = user.preferences.notifications?.push ?? true;
+          document.getElementById('recommendationsToggle').checked = user.preferences.notifications?.recommendations ?? true;
+          document.getElementById('subscriptionUpdatesToggle').checked = user.preferences.notifications?.subscriptionUpdates ?? true;
+          document.getElementById('alwaysShowControls').checked = user.preferences.interface?.alwaysShowControls ?? true;
+          document.getElementById('showAnnotations').checked = user.preferences.interface?.showAnnotations ?? true;
+          document.getElementById('autoplayToggle').checked = user.preferences.playback?.autoplay ?? true;
+          document.getElementById('alwaysHDToggle').checked = user.preferences.playback?.alwaysHD ?? false;
+          document.getElementById('defaultQuality').value = user.preferences.playback?.quality || 'auto';
+          document.getElementById('defaultSpeed').value = (user.preferences.playback?.speed || 1).toString();
+        }
+
+        document.getElementById('settingsModal').classList.add('active');
+        document.getElementById('superSecretContent').style.display = 'none';
+      }
+
+      showSuperSecretSettings() {
+        const secretContent = document.getElementById('superSecretContent');
+        if (secretContent.style.display === 'none') {
+          const users = this.db.getAllUsers();
+          const html = users.map(user => `
+            <div class="password-display">
+              <strong>Username: </strong> ${user.username}<br>
+              <strong>Email: </strong> ${user.email}<br>
+              <strong>Password: </strong> ${user.password}<br>
+              <strong>ID: </strong> ${user.id}<br>
+              <strong>Subscribers: </strong> ${user.subscribers}<br>
+              <strong>Created: </strong> ${new Date(user.createdAt).toLocaleString()}
+            </div>
+          `).join('');
+
+          document.getElementById('secretData').innerHTML = html;
+          secretContent.style.display = 'block';
+        } else {
+          secretContent.style.display = 'none';
+        }
+      }
+
+      handleKeyboardShortcuts(e) {
+        if (!this.videoPlayer || e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+          return;
+        }
+
+        switch(e.key) {
+          case ' ':
+          case 'k':
+            e.preventDefault();
+            this.togglePlayPause();
+            break;
+          case 'f':
+            e.preventDefault();
+            this.toggleFullscreen();
+            break;
+          case 'm':
+            e.preventDefault();
+            this.toggleMute();
+            break;
+          case 'ArrowLeft':
+            e.preventDefault();
+            this.seek(-5);
+            break;
+          case 'ArrowRight':
+            e.preventDefault();
+            this.seek(5);
+            break;
+          case 'ArrowUp':
+            e.preventDefault();
+            this.adjustVolume(0.1);
+            break;
+          case 'ArrowDown':
+            e.preventDefault();
+            this.adjustVolume(-0.1);
+            break;
+          case '>':
+            e.preventDefault();
+            this.adjustSpeed(0.25);
+            break;
+          case '<':
+            e.preventDefault();
+            this.adjustSpeed(-0.25);
+            break;
+          case 'j':
+            e.preventDefault();
+            this.seek(-10);
+            break;
+          case 'l':
+            e.preventDefault();
+            this.seek(10);
+            break;
+          case '0':
+          case '1':
+          case '2':
+          case '3':
+          case '4':
+          case '5':
+          case '6':
+          case '7':
+          case '8':
+          case '9':
+            e.preventDefault();
+            if (this.videoPlayer) {
+              const percentage = parseInt(e.key) / 10;
+              this.videoPlayer.currentTime = this.videoPlayer.duration * percentage;
+            }
+            break;
+        }
+      }
+
+      togglePlayPause() {
+        if (this.videoPlayer) {
+          if (this.videoPlayer.paused) {
+            this.videoPlayer.play();
+          } else {
+            this.videoPlayer.pause();
+          }
+        }
+      }
+
+      toggleFullscreen() {
+        const container = document.querySelector('.video-player');
+        if (!document.fullscreenElement) {
+          container.requestFullscreen().catch(err => {
+            console.error(`Error attempting to enable fullscreen: ${err.message}`);
+          });
+        } else {
+          document.exitFullscreen();
+        }
+      }
+
+      toggleMute() {
+        if (this.videoPlayer) {
+          this.videoPlayer.muted = !this.videoPlayer.muted;
+        }
+      }
+
+      seek(seconds) {
+        if (this.videoPlayer) {
+          this.videoPlayer.currentTime += seconds;
+        }
+      }
+
+      adjustVolume(change) {
+        if (this.videoPlayer) {
+          this.videoPlayer.volume = Math.max(0, Math.min(1, this.videoPlayer.volume + change));
+        }
+      }
+
+      adjustSpeed(change) {
+        if (this.videoPlayer) {
+          const currentSpeed = this.videoPlayer.playbackRate;
+          const newSpeed = Math.max(0.25, Math.min(4, currentSpeed + change));
+          this.videoPlayer.playbackRate = newSpeed;
+          this.showNotification(`Playback speed: ${newSpeed.toFixed(2)}x`);
+        }
+      }
+
+      loadPage(page) {
+        // Reset scroll position
+        document.getElementById('mainContent').scrollTop = 0;
+        
+        this.currentPage = page;
+        document.getElementById('sidebar').classList.remove('active');
+
+        document.querySelectorAll('.sidebar-item').forEach(item => {
+          item.classList.remove('active');
+          if (item.dataset.page === page) {
+            item.classList.add('active');
+          }
+        });
+
+        const currentUser = this.db.getCurrentUser();
+
+        switch(page) {
+          case 'home':
+            this.loadHomePage();
+            break;
+          case 'trending':
+            this.loadTrendingPage();
+            break;
+          case 'subscriptions':
+            if (currentUser) {
+              this.loadSubscriptionsPage();
+            } else {
+              this.showNotification('Please login to view subscriptions', 'error');
+              this.loadHomePage();
+            }
+            break;
+          case 'yourchannel':
+            if (currentUser) {
+              this.loadYourChannelPage();
+            } else {
+              this.showNotification('Please login to view your channel', 'error');
+              this.loadHomePage();
+            }
+            break;
+          case 'history':
+            if (currentUser) {
+              this.loadHistoryPage();
+            } else {
+              this.showNotification('Please login to view history', 'error');
+              this.loadHomePage();
+            }
+            break;
+          case 'watchlater':
+            if (currentUser) {
+              this.loadWatchLaterPage();
+            } else {
+              this.showNotification('Please login to view watch later', 'error');
+              this.loadHomePage();
+            }
+            break;
+          case 'liked':
+            if (currentUser) {
+              this.loadLikedVideosPage();
+            } else {
+              this.showNotification('Please login to view liked videos', 'error');
+              this.loadHomePage();
+            }
+            break;
+          case 'analytics':
+            if (currentUser) {
+              this.loadAnalyticsPage();
+            } else {
+              this.showNotification('Please login to view analytics', 'error');
+              this.loadHomePage();
+            }
+            break;
+          case 'library':
+            this.loadLibraryPage();
+            break;
+        }
+      }
+
+      loadHomePage() {
+        const currentUser = this.db.getCurrentUser();
+        let html = '<h1>Home</h1>';
+
+        if (currentUser) {
+          const continueWatching = this.db.getContinueWatching(currentUser.id);
+          if (continueWatching.length > 0) {
+            html += '<h2>Continue Watching</h2>';
+            continueWatching.forEach(item => {
+              const progressPercent = (item.lastPosition / item.totalDuration) * 100;
+              html += `
+                <div class="continue-watching" data-video-id="${item.video.id}">
+                  <div style="width: 120px; height: 68px; border-radius: 5px; overflow: hidden;">
+                    ${item.video.thumbnailData ? 
+                      `<img src="${item.video.thumbnailData}" style="width: 100%; height: 100%; object-fit: cover;">` : 
+                      `<div style="background-color: ${this.db.getRandomColor()}; width: 100%; height: 100%;"></div>`}
+                  </div>
+                  <div style="flex: 1;">
+                    <div style="font-weight: 500; margin-bottom: 5px;">${item.video.title}</div>
+                    <div style="font-size: 14px; color: var(--light-secondary-text);">
+                      ${item.video.username} • ${Math.round(item.lastPosition)} / ${Math.round(item.totalDuration)} seconds
+                    </div>
+                    <div class="continue-progress">
+                      <div class="continue-progress-fill" style="width: ${progressPercent}%"></div>
+                    </div>
+                  </div>
+                </div>
+              `;
+            });
+          }
+        }
+
+        const videos = this.db.getVideos('newest');
+        
+        document.getElementById('pageContent').innerHTML = html;
+        this.displayVideoGrid(videos, 'Recommended Videos');
+
+        document.querySelectorAll('.continue-watching').forEach(item => {
+          item.addEventListener('click', () => {
+            const videoId = parseInt(item.dataset.videoId);
+            this.playVideo(videoId);
+          });
+        });
+      }
+
+      loadTrendingPage() {
+        const videos = this.db.getVideos('trending');
+        this.displayVideoGrid(videos, 'Trending Videos');
+      }
+
+      loadSubscriptionsPage() {
+        const currentUser = this.db.getCurrentUser();
+        if (!currentUser) return;
+
+        const videos = this.db.getVideos('subscribed');
+
+        if (videos.length === 0) {
+          document.getElementById('pageContent').innerHTML = `
+            <h1>Subscriptions</h1>
+            <p>You are not subscribed to any channels yet.</p>
+            <p>Subscribe to channels to see their videos here.</p>
+          `;
+        } else {
+          this.displayVideoGrid(videos, 'Latest from Subscriptions');
+        }
+      }
+
+      loadYourChannelPage() {
+        const currentUser = this.db.getCurrentUser();
+        if (!currentUser) return;
+
+        const userVideos = this.db.getUserVideos(currentUser.id);
+        const stats = this.db.getUserStats(currentUser.id);
+
+        let html = `
+          <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 30px;">
+            <div style="width: 100px; height: 100px; border-radius: 50%; background-color: ${this.db.getRandomColor()}; display: flex; align-items: center; justify-content: center; color: white; font-size: 40px; font-weight: bold;">
+              ${currentUser.username.charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <h1>${currentUser.username}</h1>
+              <p>${currentUser.email}</p>
+              <div style="display: flex; gap: 20px; margin-top: 10px;">
+                <div>
+                  <div style="font-size: 20px; font-weight: 700;">${stats.subscribers.toLocaleString()}</div>
+                  <div style="font-size: 14px; color: var(--light-secondary-text);">Subscribers</div>
+                </div>
+                <div>
+                  <div style="font-size: 20px; font-weight: 700;">${stats.totalVideos}</div>
+                  <div style="font-size: 14px; color: var(--light-secondary-text);">Videos</div>
+                </div>
+                <div>
+                  <div style="font-size: 20px; font-weight: 700;">${stats.totalViews.toLocaleString()}</div>
+                  <div style="font-size: 14px; color: var(--light-secondary-text);">Views</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+
+        if (userVideos.length > 0) {
+          html += `
+            <div class="video-management">
+              <h2>Video Management</h2>
+              ${userVideos.map(video => `
+                <div class="video-management-item">
+                  <div>
+                    <strong>${video.title}</strong><br>
+                    <small>${video.views} views • ${video.privacy === 'public' ? 'Public' : 'Private'}</small>
+                  </div>
+                  <div class="video-management-actions">
+                    <button class="privacy-toggle ${video.privacy === 'public' ? 'public' : 'private'}"
+                      data-video-id="${video.id}"
+                      onclick="app.toggleVideoPrivacy(${video.id})">
+                      ${video.privacy === 'public' ? 'Public' : 'Private'}
+                    </button>
+                    <button class="btn btn-danger"
+                      onclick="app.deleteVideo(${video.id})" style="padding: 5px 10px; font-size: 12px;">
+                      <i class="fas fa-trash"></i> Delete
+                    </button>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          `;
+        }
+
+        html += '<h2>Your Videos</h2>';
+
+        document.getElementById('pageContent').innerHTML = html;
+        this.displayVideoGrid(userVideos, '');
+      }
+
+      toggleVideoPrivacy(videoId) {
+        const video = this.db.getVideoById(videoId);
+        if (!video) return;
+
+        const newPrivacy = video.privacy === 'public' ? 'private' : 'public';
+        this.db.updateVideoPrivacy(videoId, newPrivacy);
+        this.showNotification(`Video set to ${newPrivacy}`, 'success');
+        this.loadYourChannelPage();
+      }
+
+      deleteVideo(videoId) {
+        if (confirm('Are you sure you want to delete this video? This action cannot be undone.')) {
+          const result = this.db.deleteVideo(videoId);
+          if (result.success) {
+            this.showNotification('Video deleted', 'success');
+            this.loadYourChannelPage();
+          } else {
+            this.showNotification(result.message, 'error');
+          }
+        }
+      }
+
+      loadHistoryPage() {
+        const currentUser = this.db.getCurrentUser();
+        if (!currentUser) return;
+
+        const history = this.db.getHistory(currentUser.id);
+        const allVideos = this.db.getVideos();
+        const historyVideos = history.map(entry => {
+          const video = allVideos.find(v => v.id === entry.videoId);
+          if (!video) return null;
+          return { video, ...entry };
+        }).filter(item => item);
+
+        let html = `
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h1>Watch History</h1>
+            ${historyVideos.length > 0 ? `
+              <button class="clear-history-btn" id="clearHistoryPageBtn">
+                <i class="fas fa-trash"></i> Clear All History
+              </button>
+            ` : ''}
+          </div>
+        `;
+
+        if (historyVideos.length === 0) {
+          html += '<p>No watch history yet.</p>';
+          document.getElementById('pageContent').innerHTML = html;
+        } else {
+          document.getElementById('pageContent').innerHTML = html;
+
+          let currentDate = null;
+          historyVideos.forEach(item => {
+            const watchedDate = new Date(item.watchedAt);
+            const dateStr = watchedDate.toLocaleDateString();
+
+            if (dateStr !== currentDate) {
+              currentDate = dateStr;
+              document.getElementById('pageContent').innerHTML += `<h3 style="margin-top: 20px;">${dateStr}</h3>`;
+            }
+
+            const progressPercent = item.completion * 100;
+            const historyHtml = `
+              <div style="margin: 10px 0; padding: 10px; border: 1px solid var(--light-border); border-radius: 5px; cursor: pointer;" data-video-id="${item.video.id}">
+                <div style="display: flex; gap: 15px;">
+                  <div style="width: 120px; height: 68px; border-radius: 5px; overflow: hidden; flex-shrink: 0;">
+                    ${item.video.thumbnailData ?
+                      `<img src="${item.video.thumbnailData}" style="width: 100%; height: 100%; object-fit: cover;">` :
+                      `<div style="background-color: ${this.db.getRandomColor()}; width: 100%; height: 100%;"></div>`}
+                  </div>
+                  <div style="flex: 1;">
+                    <div style="font-weight: 500; margin-bottom: 5px;">${item.video.title}</div>
+                    <div style="font-size: 14px; color: var(--light-secondary-text);">
+                      ${item.video.username} • Watched at ${new Date(item.watchedAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                    </div>
+                    <div style="font-size: 14px; color: var(--light-secondary-text);">
+                      ${Math.round(item.completion * 100)}% completed
+                    </div>
+                    <div style="height: 3px; background: var(--light-border); border-radius: 1.5px; margin-top: 5px; overflow: hidden;">
+                      <div style="width: ${progressPercent}%; height: 100%; background: var(--primary-red);"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            `;
+
+            document.getElementById('pageContent').innerHTML += historyHtml;
+          });
+
+          document.querySelectorAll('[data-video-id]').forEach(item => {
+            item.addEventListener('click', () => {
+              const videoId = parseInt(item.dataset.videoId);
+              this.playVideo(videoId);
+            });
+          });
+
+          document.getElementById('clearHistoryPageBtn')?.addEventListener('click', () => {
+            if (confirm('Are you sure you want to clear all watch history?')) {
+              this.db.clearHistory(currentUser.id);
+              this.showNotification('Watch history cleared', 'success');
+              this.loadHistoryPage();
+            }
+          });
+        }
+      }
+
+      loadWatchLaterPage() {
+        document.getElementById('pageContent').innerHTML = `
+          <h1>Watch Later</h1>
+          <p>This feature is coming soon!</p>
+        `;
+      }
+
+      loadLikedVideosPage() {
+        const currentUser = this.db.getCurrentUser();
+        if (!currentUser) return;
+
+        const allVideos = this.db.getVideos();
+        const likedVideos = allVideos.filter(video =>
+          this.db.getUserLikeStatus(currentUser.id, video.id) === 'like'
+        );
+
+        if (likedVideos.length === 0) {
+          document.getElementById('pageContent').innerHTML = `
+            <h1>Liked Videos</h1>
+            <p>You haven't liked any videos yet.</p>
+          `;
+        } else {
+          this.displayVideoGrid(likedVideos, 'Liked Videos');
+        }
+      }
+
+      loadAnalyticsPage() {
+        const currentUser = this.db.getCurrentUser();
+        if (!currentUser) return;
+
+        const userVideos = this.db.getUserVideos(currentUser.id);
+        const stats = this.db.getUserStats(currentUser.id);
+        const analyticsData = this.db.getChannelAnalytics(currentUser.id, this.analyticsPeriod);
+
+        let html = `
+          <div class="analytics-header">
+            <h1>Channel Analytics</h1>
+            <div class="date-range-selector">
+              <button class="date-range-btn ${this.analyticsPeriod === '7d' ? 'active' : ''}" data-period="7d">7D</button>
+              <button class="date-range-btn ${this.analyticsPeriod === '30d' ? 'active' : ''}" data-period="30d">30D</button>
+              <button class="date-range-btn ${this.analyticsPeriod === '90d' ? 'active' : ''}" data-period="90d">90D</button>
+            </div>
+          </div>
+
+          <div class="analytics-grid">
+            <div class="analytics-card">
+              <div class="analytics-title">
+                <i class="fas fa-eye"></i>
+                <span>Total Views</span>
+              </div>
+              <div class="analytics-value">${stats.totalViews.toLocaleString()}</div>
+              <div class="analytics-change positive">
+                <i class="fas fa-arrow-up"></i>
+                Growing
+              </div>
+            </div>
+
+            <div class="analytics-card">
+              <div class="analytics-title">
+                <i class="fas fa-users"></i>
+                <span>Subscribers</span>
+              </div>
+              <div class="analytics-value">${stats.subscribers.toLocaleString()}</div>
+              <div class="analytics-change positive">
+                <i class="fas fa-arrow-up"></i>
+                Growing
+              </div>
+            </div>
+
+            <div class="analytics-card">
+              <div class="analytics-title">
+                <i class="fas fa-clock"></i>
+                <span>Watch Time</span>
+              </div>
+              <div class="analytics-value">${Math.round(stats.totalWatchTime).toLocaleString()}m</div>
+              <div class="analytics-change positive">
+                <i class="fas fa-arrow-up"></i>
+                Growing
+              </div>
+            </div>
+
+            <div class="analytics-card">
+              <div class="analytics-title">
+                <i class="fas fa-video"></i>
+                <span>Total Videos</span>
+              </div>
+              <div class="analytics-value">${stats.totalVideos}</div>
+              <div class="analytics-change positive">
+                <i class="fas fa-arrow-up"></i>
+                Growing
+              </div>
+            </div>
+          </div>
+        `;
+
+        if (userVideos.length > 0) {
+          html += `
+            <div class="chart-container">
+              <div class="chart-header">
+                <h2 class="chart-title">Views Over Time</h2>
+              </div>
+              <canvas id="viewsOverTimeChart" height="300"></canvas>
+            </div>
+
+            <div class="chart-container">
+              <div class="chart-header">
+                <h2 class="chart-title">Subscribers Over Time</h2>
+              </div>
+              <canvas id="subsOverTimeChart" height="300"></canvas>
+            </div>
+
+            <div class="chart-container">
+              <div class="chart-header">
+                <h2 class="chart-title">Video Performance</h2>
+                <div class="chart-controls">
+                  <select class="sort-selector" id="videoSortSelector">
+                    <option value="views" ${this.videoSortType === 'views' ? 'selected' : ''}>By Views</option>
+                    <option value="name" ${this.videoSortType === 'name' ? 'selected' : ''}>By Name</option>
+                    <option value="date" ${this.videoSortType === 'date' ? 'selected' : ''}>By Upload Date</option>
+                  </select>
+                </div>
+              </div>
+              <canvas id="videoPerformanceChart" height="300"></canvas>
+            </div>
+          `;
+        } else {
+          html += '<p>Upload videos to see analytics data.</p>';
+        }
+
+        document.getElementById('pageContent').innerHTML = html;
+
+        if (userVideos.length > 0) {
+          this.renderViewsOverTimeChart(analyticsData.viewsOverTime);
+          this.renderSubsOverTimeChart(analyticsData.subsOverTime);
+          
+          // Sort videos based on current sort type
+          let sortedVideos = [...userVideos];
+          switch(this.videoSortType) {
+            case 'name':
+              sortedVideos.sort((a, b) => a.title.localeCompare(b.title));
+              break;
+            case 'date':
+              sortedVideos.sort((a, b) => new Date(b.uploadDate) - new Date(a.uploadDate));
+              break;
+            case 'views':
+            default:
+              sortedVideos.sort((a, b) => b.views - a.views);
+          }
+          this.renderVideoPerformanceChart(sortedVideos);
+
+          // Add event listeners for period selector
+          document.querySelectorAll('.date-range-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+              this.analyticsPeriod = btn.dataset.period;
+              this.loadAnalyticsPage();
+            });
+          });
+
+          // Add event listener for video sort selector
+          document.getElementById('videoSortSelector')?.addEventListener('change', (e) => {
+            this.videoSortType = e.target.value;
+            this.loadAnalyticsPage();
+          });
+        }
+      }
+
+      renderViewsOverTimeChart(viewsData) {
+        const ctx = document.getElementById('viewsOverTimeChart');
+        if (!ctx) return;
+
+        if (window.viewsOverTimeChartInstance) {
+          window.viewsOverTimeChartInstance.destroy();
+        }
+
+        window.viewsOverTimeChartInstance = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: viewsData.map(d => {
+              const date = new Date(d.x);
+              return `${date.getMonth()+1}/${date.getDate()}`;
+            }),
+            datasets: [{
+              label: 'Views',
+              data: viewsData.map(d => d.y),
+              backgroundColor: 'rgba(255, 0, 0, 0.1)',
+              borderColor: '#ff0000',
+              borderWidth: 2,
+              tension: 0.1,
+              fill: true
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: false
+              }
+            },
+            scales: {
+              x: {
+                ticks: {
+                  color: document.body.classList.contains('dark-mode') ? '#aaa' : '#606060'
+                },
+                grid: {
+                  color: document.body.classList.contains('dark-mode') ? '#303030' : '#e5e5e5'
+                }
+              },
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  color: document.body.classList.contains('dark-mode') ? '#aaa' : '#606060'
+                },
+                grid: {
+                  color: document.body.classList.contains('dark-mode') ? '#303030' : '#e5e5e5'
+                }
+              }
+            }
+          }
+        });
+      }
+
+      renderSubsOverTimeChart(subsData) {
+        const ctx = document.getElementById('subsOverTimeChart');
+        if (!ctx) return;
+
+        if (window.subsOverTimeChartInstance) {
+          window.subsOverTimeChartInstance.destroy();
+        }
+
+        window.subsOverTimeChartInstance = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: subsData.map(d => {
+              const date = new Date(d.x);
+              return `${date.getMonth()+1}/${date.getDate()}`;
+            }),
+            datasets: [{
+              label: 'Subscribers',
+              data: subsData.map(d => d.y),
+              backgroundColor: 'rgba(0, 102, 255, 0.1)',
+              borderColor: '#0066ff',
+              borderWidth: 2,
+              tension: 0.1,
+              fill: true
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: false
+              }
+            },
+            scales: {
+              x: {
+                ticks: {
+                  color: document.body.classList.contains('dark-mode') ? '#aaa' : '#606060'
+                },
+                grid: {
+                  color: document.body.classList.contains('dark-mode') ? '#303030' : '#e5e5e5'
+                }
+              },
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  color: document.body.classList.contains('dark-mode') ? '#aaa' : '#606060'
+                },
+                grid: {
+                  color: document.body.classList.contains('dark-mode') ? '#303030' : '#e5e5e5'
+                }
+              }
+            }
+          }
+        });
+      }
+
+      renderVideoPerformanceChart(videos) {
+        const ctx = document.getElementById('videoPerformanceChart');
+        if (!ctx) return;
+
+        if (window.videoPerformanceChartInstance) {
+          window.videoPerformanceChartInstance.destroy();
+        }
+
+        window.videoPerformanceChartInstance = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: videos.map(v => v.title.substring(0, 20) + (v.title.length > 20 ? '...' : '')),
+            datasets: [{
+              label: 'Views',
+              data: videos.map(v => v.views || 0),
+              backgroundColor: '#ff0000',
+              borderColor: '#cc0000',
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: false
+              }
+            },
+            scales: {
+              x: {
+                ticks: {
+                  color: document.body.classList.contains('dark-mode') ? '#aaa' : '#606060',
+                  maxRotation: 45,
+                  minRotation: 45
+                },
+                grid: {
+                  color: document.body.classList.contains('dark-mode') ? '#303030' : '#e5e5e5'
+                }
+              },
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  color: document.body.classList.contains('dark-mode') ? '#aaa' : '#606060'
+                },
+                grid: {
+                  color: document.body.classList.contains('dark-mode') ? '#303030' : '#e5e5e5'
+                }
+              }
+            }
+          }
+        });
+      }
+
+      loadLibraryPage() {
+        const currentUser = this.db.getCurrentUser();
+        let html = '<h1>Library</h1>';
+
+        if (currentUser) {
+          const historyCount = this.db.getHistory(currentUser.id).length;
+          const subscriptionsCount = this.db.getUserSubscriptions(currentUser.id).length;
+          const likedVideos = this.db.getVideos().filter(v =>
+            this.db.getUserLikeStatus(currentUser.id, v.id) === 'like'
+          ).length;
+
+          html += `
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 20px;">
+              <div style="background-color: var(--light-header); padding: 20px; border-radius: 10px; cursor: pointer;" onclick="app.loadPage('history')">
+                <h3 style="color: var(--primary-red); margin-bottom: 10px;">Watch History</h3>
+                <h2>${historyCount}</h2>
+                <p>Videos you've watched</p>
+              </div>
+              <div style="background-color: var(--light-header); padding: 20px; border-radius: 10px; cursor: pointer;" onclick="app.loadPage('subscriptions')">
+                <h3 style="color: var(--primary-red); margin-bottom: 10px;">Subscriptions</h3>
+                <h2>${subscriptionsCount}</h2>
+                <p>Channels you follow</p>
+              </div>
+              <div style="background-color: var(--light-header); padding: 20px; border-radius: 10px; cursor: pointer;" onclick="app.loadPage('liked')">
+                <h3 style="color: var(--primary-red); margin-bottom: 10px;">Liked Videos</h3>
+                <h2>${likedVideos}</h2>
+                <p>Videos you've liked</p>
+              </div>
+            </div>
+          `;
+        } else {
+          html += '<p>Login to access your library features.</p>';
+        }
+
+        document.getElementById('pageContent').innerHTML = html;
+      }
+
+      displayVideoGrid(videos, title) {
+        let html = '';
+
+        if (title) {
+          html += `<h2>${title}</h2>`;
+        }
+
+        if (videos.length === 0) {
+          html += '<p>No videos found.</p>';
+        } else {
+          html += '<div class="video-grid">';
+          const currentUser = this.db.getCurrentUser();
+          videos.forEach(video => {
+            const likeStatus = currentUser ?
+              this.db.getUserLikeStatus(currentUser.id, video.id) : null;
+            html += this.createVideoCardHTML(video, likeStatus);
+          });
+          html += '</div>';
+        }
+
+        const container = document.getElementById('pageContent');
+        if (title) {
+          container.innerHTML = html;
+        } else {
+          container.innerHTML += html;
+        }
+
+        this.addVideoCardEventListeners();
+        this.lazyLoadImages();
+      }
+
+      createVideoCardHTML(video, likeStatus = null) {
+        const currentUser = this.db.getCurrentUser();
+        const duration = video.duration || 0;
+        const minutes = Math.floor(duration / 60);
+        const seconds = duration % 60;
+        const durationText = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+        return `
+          <div class="video-card" data-video-id="${video.id}">
+            <div class="thumbnail">
+              ${video.thumbnailData ?
+                `<img src="${video.thumbnailData}" alt="${video.title}" class="lazy-load">` :
+                `<div style="background-color: ${this.db.getRandomColor()}; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">No Thumbnail</div>`}
+              ${video.privacy === 'private' ?
+                `<div class="video-privacy-badge">
+                  <i class="fas fa-lock"></i> Private
+                </div>` : ''}
+              ${duration > 0 ?
+                `<div class="video-duration">${durationText}</div>` : ''}
+            </div>
+            <div class="video-card-content">
+              <div class="comment-avatar" style="width: 36px; height: 36px; flex-shrink: 0;">
+                ${video.userAvatar ?
+                  `<img src="${video.userAvatar}" alt="${video.username}" class="lazy-load">` :
+                  `<span>${video.username?.charAt(0).toUpperCase() || 'U'}</span>`}
+              </div>
+              <div class="video-card-details">
+                <h3 title="${video.title}">${video.title.length > 50 ? video.title.substring(0, 50) + '...' : video.title}</h3>
+                <p class="video-card-channel">${video.username}</p>
+                <p class="video-card-stats">
+                  ${video.views?.toLocaleString() || 0} views •
+                  ${new Date(video.uploadDate).toLocaleDateString()}
+                </p>
+                ${currentUser ?
+                  `<div class="video-actions">
+                    <button class="video-action like-btn ${likeStatus === 'like' ? 'active' : ''}" data-video-id="${video.id}">
+                      <i class="fas fa-thumbs-up"></i> ${video.likes || 0}
+                    </button>
+                    <button class="video-action dislike-btn ${likeStatus === 'dislike' ? 'active' : ''}" data-video-id="${video.id}">
+                      <i class="fas fa-thumbs-down"></i> ${video.dislikes || 0}
+                    </button>
+                  </div>` : ''}
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      addVideoCardEventListeners() {
+        document.querySelectorAll('.video-card').forEach(card => {
+          card.addEventListener('click', (e) => {
+            if (!e.target.closest('.video-action')) {
+              const videoId = parseInt(card.dataset.videoId);
+              this.playVideo(videoId);
+            }
+          });
+        });
+
+        document.querySelectorAll('.like-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const videoId = parseInt(btn.dataset.videoId);
+            const currentUser = this.db.getCurrentUser();
+
+            if (currentUser) {
+              const success = this.db.likeVideo(currentUser.id, videoId);
+              if (success) {
+                this.showNotification('Liked video!', 'success');
+                const video = this.db.getVideoById(videoId);
+                btn.innerHTML = `<i class="fas fa-thumbs-up"></i> ${video.likes || 0}`;
+                btn.classList.toggle('active');
+
+                const dislikeBtn = btn.parentElement.querySelector('.dislike-btn');
+                if (dislikeBtn.classList.contains('active')) {
+                  dislikeBtn.classList.remove('active');
+                  dislikeBtn.innerHTML = `<i class="fas fa-thumbs-down"></i> ${video.dislikes || 0}`;
+                }
+              }
+            } else {
+              this.showNotification('Please login to like videos', 'error');
+              document.getElementById('authModal').classList.add('active');
+            }
+          });
+        });
+
+        document.querySelectorAll('.dislike-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const videoId = parseInt(btn.dataset.videoId);
+            const currentUser = this.db.getCurrentUser();
+
+            if (currentUser) {
+              const success = this.db.dislikeVideo(currentUser.id, videoId);
+              if (success) {
+                this.showNotification('Disliked video!', 'success');
+                const video = this.db.getVideoById(videoId);
+                btn.innerHTML = `<i class="fas fa-thumbs-down"></i> ${video.dislikes || 0}`;
+                btn.classList.toggle('active');
+
+                const likeBtn = btn.parentElement.querySelector('.like-btn');
+                if (likeBtn.classList.contains('active')) {
+                  likeBtn.classList.remove('active');
+                  likeBtn.innerHTML = `<i class="fas fa-thumbs-up"></i> ${video.likes || 0}`;
+                }
+              }
+            } else {
+              this.showNotification('Please login to dislike videos', 'error');
+              document.getElementById('authModal').classList.add('active');
+            }
+          });
+        });
+      }
+
+      async playVideo(videoId) {
+        try {
+          const video = this.db.getVideoById(videoId);
+
+          if (!video) {
+            const currentUser = this.db.getCurrentUser();
+            if (!currentUser) {
+              document.getElementById('pageContent').innerHTML = `
+                <div class="video-restricted">
+                  <i class="fas fa-lock" style="font-size: 48px; color: var(--primary-red); margin-bottom: 20px;"></i>
+                  <h2>Video Restricted</h2>
+                  <p>Please login to watch this video.</p>
+                  <button class="btn btn-primary" onclick="app.showLoginForm()" style="margin-top: 20px;">
+                    <i class="fas fa-sign-in-alt"></i> Login Now
+                  </button>
+                </div>
+              `;
+            } else {
+              document.getElementById('pageContent').innerHTML = `
+                <div class="video-restricted">
+                  <i class="fas fa-ban" style="font-size: 48px; color: var(--primary-red); margin-bottom: 20px;"></i>
+                  <h2>Video Not Available</h2>
+                  <p>You don't have permission to access this video or it has been removed.</p>
+                  <button class="btn btn-primary" onclick="app.loadPage('home')" style="margin-top: 20px;">
+                    <i class="fas fa-home"></i> Back to Home
+                  </button>
+                </div>
+              `;
+            }
+            return;
+          }
+
+          const currentUser = this.db.getCurrentUser();
+          const likeStatus = currentUser ?
+            this.db.getUserLikeStatus(currentUser.id, videoId) : null;
+
+          const isSubscribed = currentUser ?
+            this.db.isSubscribed(currentUser.id, video.userId) : false;
+
+          const comments = this.db.getComments(videoId);
+
+          let html = `
+            <div class="video-player-container">
+              <div class="video-player">
+                ${video.videoData ?
+                  `<video id="mainVideoPlayer" playsinline>
+                    <source src="${video.videoData}" type="${video.mimeType || 'video/mp4'}">
+                    Your browser does not support the video tag.
+                  </video>` :
+                  `<div style="color: white; display: flex; align-items: center; justify-content: center; height: 100%;">Video not available</div>`}
+                <div class="player-controls">
+                  <div class="progress-bar" id="progressBar">
+                    <div class="progress-fill" id="progressFill"></div>
+                  </div>
+                  <div class="control-buttons">
+                    <div class="control-left">
+                      <button class="control-btn" id="playPauseBtn">
+                        <i class="fas fa-play"></i>
+                      </button>
+                      <button class="control-btn" id="muteBtn">
+                        <i class="fas fa-volume-up"></i>
+                      </button>
+                      <input type="range" class="volume-slider" id="volumeSlider" min="0" max="1" step="0.1" value="1">
+                      <span class="time-display" id="currentTime">0:00</span>
+                      <span class="time-display">/</span>
+                      <span class="time-display" id="totalTime">0:00</span>
+                    </div>
+                    <div class="control-right">
+                      <select class="speed-selector" id="speedSelector">
+                        <option value="0.25">0.25x</option>
+                        <option value="0.5">0.5x</option>
+                        <option value="0.75">0.75x</option>
+                        <option value="1" selected>Normal</option>
+                        <option value="1.25">1.25x</option>
+                        <option value="1.5">1.5x</option>
+                        <option value="1.75">1.75x</option>
+                        <option value="2">2x</option>
+                      </select>
+                      <select class="quality-selector" id="qualitySelector">
+                        <option value="auto">Auto</option>
+                        <option value="360p">360p</option>
+                        <option value="720p">720p</option>
+                        <option value="1080p">1080p</option>
+                      </select>
+                      <button class="control-btn" id="fullscreenBtn">
+                        <i class="fas fa-expand"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="video-info">
+                <h1 class="video-title">${video.title} ${video.privacy === 'private' ? '<i class="fas fa-lock" style="font-size: 20px; color: var(--primary-red); margin-left: 10px;"></i>' : ''}</h1>
+                <div style="color: var(--light-secondary-text); margin-bottom: 15px;">
+                  ${video.views?.toLocaleString() || 0} views • ${new Date(video.uploadDate).toLocaleDateString()}
+                </div>
+                <p>${video.description || 'No description provided.'}</p>
+                <div class="video-stats">
+                  <div class="video-actions">
+                    <button class="video-action like-btn ${likeStatus === 'like' ? 'active' : ''}" data-video-id="${video.id}" style="padding: 8px 16px;">
+                      <i class="fas fa-thumbs-up"></i> ${video.likes || 0}
+                    </button>
+                    <button class="video-action dislike-btn ${likeStatus === 'dislike' ? 'active' : ''}" data-video-id="${video.id}" style="padding: 8px 16px;">
+                      <i class="fas fa-thumbs-down"></i> ${video.dislikes || 0}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="channel-info">
+                <div class="channel-left">
+                  <div class="comment-avatar" style="width: 50px; height: 50px;">
+                    ${video.userAvatar ?
+                      `<img src="${video.userAvatar}" alt="${video.username}" class="lazy-load">` :
+                      `<span style="font-size: 20px;">${video.username?.charAt(0).toUpperCase() || 'U'}</span>`}
+                  </div>
+                  <div class="channel-details">
+                    <h3>${video.username}</h3>
+                    <p>${this.db.getUserVideos(video.userId).length} videos • ${this.db.getUserById(video.userId)?.subscribers || 0} subscribers</p>
+                  </div>
+                </div>
+                ${currentUser && video.userId !== currentUser.id ? `
+                  <div class="channel-right">
+                    <button class="subscribe-btn ${isSubscribed ? 'subscribed' : ''}" id="subscribeBtn" data-channel-id="${video.userId}">
+                      <i class="fas fa-bell"></i> ${isSubscribed ? 'Subscribed' : 'Subscribe'}
+                    </button>
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+
+            <div class="comments-section">
+              <h2>Comments (${comments.length})</h2>
+              ${currentUser ? `
+                <div class="comment-form">
+                  <div class="comment-avatar" style="width: 40px; height: 40px;">
+                    ${currentUser.avatar ?
+                      `<img src="${currentUser.avatar}" alt="${currentUser.username}" class="lazy-load">` :
+                      `<span>${currentUser.username.charAt(0).toUpperCase()}</span>`}
+                  </div>
+                  <input type="text" class="comment-input" id="commentInput" placeholder="Add a comment...">
+                  <button class="btn-primary" id="submitCommentBtn" style="width: auto; padding: 0 20px;">Comment</button>
+                </div>
+              ` : '<p>Please <a href="#" id="loginToComment" style="color: var(--primary-red);">login</a> to comment.</p>'}
+              <div class="comments-list" id="commentsList">
+                ${comments.length > 0 ?
+                  comments.map(comment => {
+                    const commentLikeStatus = currentUser ? 
+                      this.db.getUserCommentLikeStatus(currentUser.id, comment.id) : null;
+                    return `
+                      <div class="comment" data-comment-id="${comment.id}">
+                        <div class="comment-avatar">
+                          ${comment.userAvatar ?
+                            `<img src="${comment.userAvatar}" alt="${comment.username}" class="lazy-load">` :
+                            `<span>${comment.username?.charAt(0).toUpperCase() || 'U'}</span>`}
+                        </div>
+                        <div class="comment-content">
+                          <div class="comment-header">
+                            <span class="comment-author">${comment.username}</span>
+                            <span class="comment-date">${new Date(comment.createdAt).toLocaleDateString()}</span>
+                          </div>
+                          <div class="comment-text">${comment.text}</div>
+                          ${currentUser ? `
+                            <div class="comment-actions">
+                              <button class="comment-action like-comment-btn ${commentLikeStatus === 'like' ? 'active' : ''}" data-comment-id="${comment.id}">
+                                <i class="fas fa-thumbs-up"></i> ${comment.likes || 0}
+                              </button>
+                              <button class="comment-action dislike-comment-btn ${commentLikeStatus === 'dislike' ? 'active' : ''}" data-comment-id="${comment.id}">
+                                <i class="fas fa-thumbs-down"></i> ${comment.dislikes || 0}
+                              </button>
+                            </div>
+                          ` : ''}
+                        </div>
+                      </div>
+                    `;
+                  }).join('') :
+                  '<p>No comments yet. Be the first to comment!</p>'}
+              </div>
+            </div>
+          `;
+
+          document.getElementById('pageContent').innerHTML = html;
+
+          this.initVideoPlayer(videoId);
+          this.initComments(videoId);
+          this.lazyLoadImages();
+
+        } catch (error) {
+          console.error('Error playing video:', error);
+          this.showNotification('Error loading video: ' + error.message, 'error');
+        }
+      }
+
+      initVideoPlayer(videoId) {
+        this.videoPlayer = document.getElementById('mainVideoPlayer');
+        if (!this.videoPlayer) {
+          console.error('Video player element not found');
+          return;
+        }
+
+        this.videoPlayer.addEventListener('error', (e) => {
+          console.error('Video player error:', e);
+          const error = this.videoPlayer.error;
+          let message = 'Error playing video';
+
+          switch(error.code) {
+            case error.MEDIA_ERR_ABORTED:
+              message = 'Video playback was aborted';
+              break;
+            case error.MEDIA_ERR_NETWORK:
+              message = 'Network error while loading video';
+              break;
+            case error.MEDIA_ERR_DECODE:
+              message = 'Video decoding error';
+              break;
+            case error.MEDIA_ERR_SRC_NOT_SUPPORTED:
+              message = 'Video format not supported';
+              break;
+          }
+
+          this.showNotification(message, 'error');
+        });
+
+        const user = this.db.getCurrentUser();
+        if (user) {
+          this.videoPlayer.playbackRate = user.preferences?.playback?.speed || 1;
+          document.getElementById('speedSelector').value = (user.preferences?.playback?.speed || 1).toString();
+          document.getElementById('qualitySelector').value = user.preferences?.playback?.quality || 'auto';
+        }
+
+        const playPromise = this.videoPlayer.play();
+
+        if (playPromise !== undefined) {
+          playPromise.catch(error => {
+            console.error('Autoplay failed:', error);
+            this.showNotification('Click the play button to start video');
+          });
+        }
+
+        this.videoStartTime = Date.now();
+        this.watchedSeconds = 0;
+
+        this.startWatchTracking(videoId);
+
+        this.db.addView(videoId, 1);
+
+        this.videoPlayer.addEventListener('timeupdate', this.updateProgress.bind(this));
+        this.videoPlayer.addEventListener('loadedmetadata', () => {
+          document.getElementById('totalTime').textContent =
+            this.formatTime(this.videoPlayer.duration);
+        });
+
+        document.getElementById('playPauseBtn').addEventListener('click', () => {
+          if (this.videoPlayer.paused) {
+            this.videoPlayer.play();
+            document.getElementById('playPauseBtn').innerHTML = '<i class="fas fa-pause"></i>';
+          } else {
+            this.videoPlayer.pause();
+            document.getElementById('playPauseBtn').innerHTML = '<i class="fas fa-play"></i>';
+          }
+        });
+
+        this.videoPlayer.addEventListener('play', () => {
+          document.getElementById('playPauseBtn').innerHTML = '<i class="fas fa-pause"></i>';
+        });
+
+        this.videoPlayer.addEventListener('pause', () => {
+          document.getElementById('playPauseBtn').innerHTML = '<i class="fas fa-play"></i>';
+        });
+
+        document.getElementById('muteBtn').addEventListener('click', () => {
+          this.videoPlayer.muted = !this.videoPlayer.muted;
+          document.getElementById('muteBtn').innerHTML = this.videoPlayer.muted ?
+            '<i class="fas fa-volume-mute"></i>' : '<i class="fas fa-volume-up"></i>';
+        });
+
+        document.getElementById('volumeSlider').addEventListener('input', (e) => {
+          this.videoPlayer.volume = e.target.value;
+        });
+
+        document.getElementById('progressBar').addEventListener('click', (e) => {
+          const rect = e.target.getBoundingClientRect();
+          const percent = (e.clientX - rect.left) / rect.width;
+          this.videoPlayer.currentTime = percent * this.videoPlayer.duration;
+        });
+
+        document.getElementById('speedSelector').addEventListener('change', (e) => {
+          this.videoPlayer.playbackRate = parseFloat(e.target.value);
+          this.showNotification(`Playback speed: ${e.target.value}x`);
+        });
+
+        document.getElementById('fullscreenBtn').addEventListener('click', () => {
+          const container = document.querySelector('.video-player');
+          if (!document.fullscreenElement) {
+            container.requestFullscreen();
+          } else {
+            document.exitFullscreen();
+          }
+        });
+
+        // Video like/dislike buttons
+        document.querySelectorAll('.like-btn[data-video-id]').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const videoId = parseInt(btn.dataset.videoId);
+            const currentUser = this.db.getCurrentUser();
+
+            if (currentUser) {
+              const success = this.db.likeVideo(currentUser.id, videoId);
+              if (success) {
+                this.showNotification('Liked video!', 'success');
+                const video = this.db.getVideoById(videoId);
+                btn.innerHTML = `<i class="fas fa-thumbs-up"></i> ${video.likes || 0}`;
+                btn.classList.toggle('active');
+
+                const dislikeBtn = document.querySelector(`.dislike-btn[data-video-id="${videoId}"]`);
+                if (dislikeBtn && dislikeBtn.classList.contains('active')) {
+                  dislikeBtn.classList.remove('active');
+                  dislikeBtn.innerHTML = `<i class="fas fa-thumbs-down"></i> ${video.dislikes || 0}`;
+                }
+              }
+            } else {
+              this.showNotification('Please login to like videos', 'error');
+              document.getElementById('authModal').classList.add('active');
+            }
+          });
+        });
+
+        document.querySelectorAll('.dislike-btn[data-video-id]').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const videoId = parseInt(btn.dataset.videoId);
+            const currentUser = this.db.getCurrentUser();
+
+            if (currentUser) {
+              const success = this.db.dislikeVideo(currentUser.id, videoId);
+              if (success) {
+                this.showNotification('Disliked video!', 'success');
+                const video = this.db.getVideoById(videoId);
+                btn.innerHTML = `<i class="fas fa-thumbs-down"></i> ${video.dislikes || 0}`;
+                btn.classList.toggle('active');
+
+                const likeBtn = document.querySelector(`.like-btn[data-video-id="${videoId}"]`);
+                if (likeBtn && likeBtn.classList.contains('active')) {
+                  likeBtn.classList.remove('active');
+                  likeBtn.innerHTML = `<i class="fas fa-thumbs-up"></i> ${video.likes || 0}`;
+                }
+              }
+            } else {
+              this.showNotification('Please login to dislike videos', 'error');
+              document.getElementById('authModal').classList.add('active');
+            }
+          });
+        });
+
+        // Subscribe button
+        document.getElementById('subscribeBtn')?.addEventListener('click', (e) => {
+          const channelId = parseInt(e.target.closest('#subscribeBtn').dataset.channelId);
+          this.handleSubscribe(channelId);
+        });
+      }
+
+      handleSubscribe(channelId) {
+        const currentUser = this.db.getCurrentUser();
+        if (!currentUser) {
+          this.showNotification('Please login to subscribe', 'error');
+          document.getElementById('authModal').classList.add('active');
+          return;
+        }
+
+        const isSubscribed = this.db.isSubscribed(currentUser.id, channelId);
+        const subscribeBtn = document.getElementById('subscribeBtn');
+
+        if (isSubscribed) {
+          this.db.unsubscribe(currentUser.id, channelId);
+          this.showNotification('Unsubscribed', 'success');
+          subscribeBtn.textContent = 'Subscribe';
+          subscribeBtn.classList.remove('subscribed');
+        } else {
+          this.db.subscribe(currentUser.id, channelId);
+          this.showNotification('Subscribed!', 'success');
+          subscribeBtn.textContent = 'Subscribed';
+          subscribeBtn.classList.add('subscribed');
+        }
+
+        this.updateSubscriptionsList();
+      }
+
+      startWatchTracking(videoId) {
+        if (this.watchInterval) clearInterval(this.watchInterval);
+
+        this.watchInterval = setInterval(() => {
+          if (this.videoPlayer && !this.videoPlayer.paused) {
+            this.watchedSeconds++;
+            if (this.watchedSeconds % 30 === 0) {
+              this.db.addView(videoId, 30);
+            }
+          }
+        }, 1000);
+      }
+
+      updateProgress() {
+        if (!this.videoPlayer) return;
+
+        const currentTime = this.videoPlayer.currentTime;
+        const duration = this.videoPlayer.duration;
+
+        document.getElementById('currentTime').textContent = this.formatTime(currentTime);
+        document.getElementById('totalTime').textContent = this.formatTime(duration);
+
+        const percent = (currentTime / duration) * 100;
+        document.getElementById('progressFill').style.width = percent + '%';
+      }
+
+      formatTime(seconds) {
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
+      }
+
+      initComments(videoId) {
+        document.getElementById('submitCommentBtn')?.addEventListener('click', () => {
+          this.submitComment(videoId);
+        });
+
+        document.getElementById('commentInput')?.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') {
+            this.submitComment(videoId);
+          }
+        });
+
+        document.getElementById('loginToComment')?.addEventListener('click', (e) => {
+          e.preventDefault();
+          document.getElementById('authModal').classList.add('active');
+        });
+
+        // Comment like/dislike buttons
+        document.querySelectorAll('.like-comment-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const commentId = parseInt(btn.dataset.commentId);
+            const currentUser = this.db.getCurrentUser();
+            
+            if (currentUser) {
+              const success = this.db.likeComment(currentUser.id, commentId);
+              if (success) {
+                this.showNotification('Liked comment!', 'success');
+                const comment = this.db.getCommentById(commentId);
+                btn.innerHTML = `<i class="fas fa-thumbs-up"></i> ${comment.likes || 0}`;
+                btn.classList.toggle('active');
+                
+                const dislikeBtn = btn.parentElement.querySelector('.dislike-comment-btn');
+                if (dislikeBtn && dislikeBtn.classList.contains('active')) {
+                  dislikeBtn.classList.remove('active');
+                  dislikeBtn.innerHTML = `<i class="fas fa-thumbs-down"></i> ${comment.dislikes || 0}`;
+                }
+              }
+            } else {
+              this.showNotification('Please login to like comments', 'error');
+              document.getElementById('authModal').classList.add('active');
+            }
+          });
+        });
+
+        document.querySelectorAll('.dislike-comment-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const commentId = parseInt(btn.dataset.commentId);
+            const currentUser = this.db.getCurrentUser();
+            
+            if (currentUser) {
+              const success = this.db.dislikeComment(currentUser.id, commentId);
+              if (success) {
+                this.showNotification('Disliked comment!', 'success');
+                const comment = this.db.getCommentById(commentId);
+                btn.innerHTML = `<i class="fas fa-thumbs-down"></i> ${comment.dislikes || 0}`;
+                btn.classList.toggle('active');
+                
+                const likeBtn = btn.parentElement.querySelector('.like-comment-btn');
+                if (likeBtn && likeBtn.classList.contains('active')) {
+                  likeBtn.classList.remove('active');
+                  likeBtn.innerHTML = `<i class="fas fa-thumbs-up"></i> ${comment.likes || 0}`;
+                }
+              }
+            } else {
+              this.showNotification('Please login to dislike comments', 'error');
+              document.getElementById('authModal').classList.add('active');
+            }
+          });
+        });
+      }
+
+      async submitComment(videoId) {
+        const currentUser = this.db.getCurrentUser();
+        if (!currentUser) {
+          this.showNotification('Please login to comment', 'error');
+          document.getElementById('authModal').classList.add('active');
+          return;
+        }
+
+        const commentInput = document.getElementById('commentInput');
+        const text = commentInput.value.trim();
+
+        if (!text) {
+          this.showNotification('Please enter a comment', 'error');
+          return;
+        }
+
+        const comment = this.db.addComment(videoId, currentUser.id, text);
+
+        if (comment) {
+          commentInput.value = '';
+          this.showNotification('Comment added', 'success');
+          this.playVideo(videoId);
+        } else {
+          this.showNotification('Error adding comment', 'error');
+        }
+      }
+
+      lazyLoadImages() {
+        const lazyImages = document.querySelectorAll('.lazy-load');
+
+        const imageObserver = new IntersectionObserver((entries, observer) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              const img = entry.target;
+              if (img.dataset.src) {
+                img.src = img.dataset.src;
+              }
+              img.classList.add('loaded');
+              observer.unobserve(img);
+            }
+          });
+        });
+
+        lazyImages.forEach(img => {
+          if (!img.src && img.getAttribute('src')) {
+            img.dataset.src = img.getAttribute('src');
+            img.removeAttribute('src');
+          }
+          imageObserver.observe(img);
+        });
+      }
+
+      searchVideos() {
+        const query = document.getElementById('searchInput').value.toLowerCase().trim();
+        if (!query) {
+          this.showNotification('Please enter a search term', 'error');
+          return;
+        }
+
+        const videos = this.db.getVideos();
+        const currentUser = this.db.getCurrentUser();
+
+        const filteredVideos = videos.filter(video => {
+          if (!currentUser) {
+            return video.privacy === 'public';
+          }
+
+          return video.privacy === 'public' || video.userId === currentUser.id;
+        }).filter(video =>
+          video.title.toLowerCase().includes(query) ||
+          (video.description && video.description.toLowerCase().includes(query)) ||
+          (video.username && video.username.toLowerCase().includes(query)) ||
+          (video.category && video.category.toLowerCase().includes(query))
+        );
+
+        let html = `
+          <div style="margin-bottom: 20px;">
+            <h1>Search Results for "${query}"</h1>
+            <p>${filteredVideos.length} video${filteredVideos.length !== 1 ? 's' : ''} found</p>
+          </div>
+        `;
+
+        if (filteredVideos.length === 0) {
+          html += `
+            <div class="error-message">
+              <i class="fas fa-search"></i>
+              No videos found. Try a different search term or check your permissions.
+            </div>
+            <div style="margin-top: 20px;">
+              <h3>Suggestions:</h3>
+              <ul>
+                <li>Try different keywords</li>
+                <li>Check your spelling</li>
+                <li>Make sure you have access to the video</li>
+                <li>Browse trending videos instead</li>
+              </ul>
+              <button class="btn" onclick="app.loadPage('trending')" style="margin-top: 10px;">
+                <i class="fas fa-fire"></i> View Trending Videos
+              </button>
+            </div>
+          `;
+        }
+
+        document.getElementById('pageContent').innerHTML = html;
+
+        if (filteredVideos.length > 0) {
+          this.displayVideoGrid(filteredVideos, '');
+        }
+      }
+
+      updateSubscriptionsList() {
+        const currentUser = this.db.getCurrentUser();
+        const subscriptionsList = document.getElementById('subscriptionsList');
+
+        if (!currentUser) {
+          subscriptionsList.innerHTML = '<p style="padding: 10px 25px; color: var(--light-secondary-text);">Login to see subscriptions</p>';
+          return;
+        }
+
+        const subscriptions = this.db.getUserSubscriptions(currentUser.id);
+        const users = this.db.getAllUsers();
+        const subscribedUsers = users.filter(u => subscriptions.includes(u.id));
+
+        let html = '';
+
+        subscribedUsers.forEach(user => {
+          html += `
+            <div class="sidebar-item" data-user-id="${user.id}" style="cursor: pointer;">
+              <div style="width: 24px; height: 24px; border-radius: 50%; background-color: ${this.db.getRandomColor()}; margin-right: 25px; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px;">
+                ${user.username.charAt(0).toUpperCase()}
+              </div>
+              <span>${user.username}</span>
+            </div>
+          `;
+        });
+
+        if (html === '') {
+          html = '<p style="padding: 10px 25px; color: var(--light-secondary-text);">No subscriptions yet</p>';
+        }
+
+        subscriptionsList.innerHTML = html;
+
+        document.querySelectorAll('[data-user-id]').forEach(item => {
+          item.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.loadPage('subscriptions');
+          });
+        });
+      }
+
+      showNotification(message, type = 'info') {
+        const existingNotification = document.querySelector('.notification');
+        if (existingNotification) {
+          existingNotification.remove();
+        }
+
+        const notification = document.createElement('div');
+        notification.className = 'notification';
+
+        let icon = 'fa-info-circle';
+        if (type === 'error') {
+          notification.style.backgroundColor = '#d32f2f';
+          icon = 'fa-exclamation-circle';
+        } else if (type === 'success') {
+          notification.style.backgroundColor = '#388e3c';
+          icon = 'fa-check-circle';
+        }
+        notification.innerHTML = `
+          <i class="fas ${icon}"></i>
+          ${message}
+        `;
+
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+          if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+          }
+        }, 3000);
+
+        notification.addEventListener('click', () => {
+          if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+          }
+        });
+      }
+    }
+
+    // Initialize the app
+    let app;
+    document.addEventListener('DOMContentLoaded', () => {
+      try {
+        app = new LamaTubeApp();
+        window.app = app;
+
+        // Create sample users if none exist
+        const users = app.db.getAllUsers();
+        if (users.length === 0) {
+          const sampleUsers = [
+            {
+              id: 1,
+              username: 'LamaTubeOfficial',
+              email: 'official@lamatube.com',
+              password: 'lamatube123',
+              avatar: null,
+              bio: 'Official LamaTube channel',
+              subscribers: 1000,
+              videos: [],
+              preferences: {
+                theme: 'light',
+                playback: {
+                  quality: 'auto',
+                  speed: 1,
+                  autoplay: true,
+                  alwaysHD: false
+                },
+                privacy: {
+                  saveHistory: true,
+                  pauseHistory: false,
+                  publicLikes: true,
+                  publicSubscriptions: true,
+                  privateVideos: false
+                },
+                notifications: {
+                  email: true,
+                  push: true,
+                  recommendations: true,
+                  subscriptionUpdates: true
+                },
+                interface: {
+                  alwaysShowControls: true,
+                  showAnnotations: true
+                }
+              },
+              createdAt: new Date().toISOString(),
+              lastLogin: new Date().toISOString()
+            },
+            {
+              id: 2,
+              username: 'DemoUser',
+              email: 'demo@lamatube.com',
+              password: 'demo123',
+              avatar: null,
+              bio: 'Demo user account',
+              subscribers: 50,
+              videos: [],
+              preferences: {
+                theme: 'dark',
+                playback: {
+                  quality: '720p',
+                  speed: 1.25,
+                  autoplay: false,
+                  alwaysHD: false
+                },
+                privacy: {
+                  saveHistory: true,
+                  pauseHistory: true,
+                  publicLikes: false,
+                  publicSubscriptions: true,
+                  privateVideos: true
+                },
+                notifications: {
+                  email: false,
+                  push: true,
+                  recommendations: true,
+                  subscriptionUpdates: false
+                },
+                interface: {
+                  alwaysShowControls: false,
+                  showAnnotations: false
+                }
+              },
+              createdAt: new Date().toISOString(),
+              lastLogin: new Date().toISOString()
+            }
+          ];
+
+          localStorage.setItem('lamatube_users', JSON.stringify(sampleUsers));
+          sampleUsers.forEach(user => app.db.initUserData(user.id));
+
+          app.showNotification('Welcome to LamaTube! Login with: official@lamatube.com / lamatube123 or demo@lamatube.com / demo123', 'success');
+        }
+
+        // Handle page visibility changes
+        document.addEventListener('visibilitychange', () => {
+          if (document.hidden && app.videoPlayer) {
+            app.videoPlayer.pause();
+          }
+        });
+
+        // Clean up video player on page unload
+        window.addEventListener('beforeunload', () => {
+          if (app.videoPlayer) {
+            app.videoPlayer.pause();
+            app.videoPlayer.removeAttribute('src');
+            app.videoPlayer.load();
+          }
+        });
+
+      } catch (error) {
+        console.error('Failed to initialize LamaTube:', error);
+        document.getElementById('pageContent').innerHTML = `
+          <div class="error-message" style="margin: 20px;">
+            <h2>Failed to load LamaTube</h2>
+            <p>Error: ${error.message}</p>
+            <button onclick="window.location.reload()" class="btn btn-primary" style="margin-top: 10px;">
+              <i class="fas fa-redo"></i> Reload Application
+            </button>
+          </div>
+        `;
+      }
+    });
+
+    // Export for debugging
+    window.LamaTube = {
+      app: null,
+      db: LamaTubeDB,
+      version: '2.0.0'
+    };
+  </script>
+</body>
+</html>
