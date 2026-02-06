@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LamaTube</title>
+  <title>LamaTube - Complete YouTube Clone</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -1204,23 +1204,23 @@
     }
 
     .btn-danger {
-      background-color: #f47575;
+      background-color: #f4757;
       color: white;
       width: 100%;
     }
 
     .btn-danger:hover {
-      background-color: #f37422;
+      background-color: #d9534f;
     }
 
     .btn-warning {
-      background-color: #fa5502;
+      background-color: #f0ad4e;
       color: white;
       width: 100%;
     }
 
     .btn-warning:hover {
-      background-color: #e59400;
+      background-color: #ec971f;
     }
 
     .form-footer {
@@ -1742,10 +1742,11 @@
           <div style="flex: 1; min-width: 300px;">
             <h3>Features:</h3>
             <ul style="margin-left: 20px;">
-              <li>Upload and watch videos</li>
+              <li>Upload and watch videos (now with IndexedDB storage)</li>
+              <li>4K resolution support</li>
               <li>Like, comment, and subscribe</li>
               <li>Track watch history</li>
-              <li>Channel analytics</li>
+              <li>Enhanced analytics with 365-day tracking</li>
               <li>Dark/Light themes</li>
               <li>Responsive design</li>
             </ul>
@@ -1816,10 +1817,10 @@
           </select>
         </div>
         <div class="form-group">
-          <label class="form-label">Video File * (MP4, WebM, OGG - max 50MB)</label>
+          <label class="form-label">Video File * (MP4, WebM, OGG - max 500MB)</label>
           <input type="file" class="form-file" id="videoFile" accept="video/*" required>
           <div style="font-size: 12px; color: var(--light-secondary-text); margin-top: 5px;">
-            Supported formats: MP4, WebM, OGG
+            Supported formats: MP4, WebM, OGG. Now supports up to 4K resolution with IndexedDB storage
           </div>
         </div>
         <div class="form-group">
@@ -1916,6 +1917,8 @@
                 <option value="360p">360p</option>
                 <option value="720p">720p</option>
                 <option value="1080p">1080p</option>
+                <option value="1440p">1440p</option>
+                <option value="2160p">4K (2160p)</option>
               </select>
             </div>
             <div class="setting-item">
@@ -2097,9 +2100,245 @@
   </div>
 
   <script>
-    // Enhanced LamaTube Database Class with All Features
+    // IndexedDB Video Storage Manager
+    class VideoStorageDB {
+      constructor() {
+        this.dbName = 'LamaTubeVideoStorage';
+        this.storeName = 'videos';
+        this.db = null;
+        this.initialized = false;
+      }
+
+      async init() {
+        if (this.initialized) return Promise.resolve();
+
+        return new Promise((resolve, reject) => {
+          const request = indexedDB.open(this.dbName, 2);
+
+          request.onerror = () => {
+            console.error('IndexedDB error:', request.error);
+            reject(request.error);
+          };
+
+          request.onsuccess = () => {
+            this.db = request.result;
+            this.initialized = true;
+            console.log('IndexedDB initialized successfully');
+            resolve();
+          };
+
+          request.onupgradeneeded = (event) => {
+            const db = event.target.result;
+            
+            // Create videos store if it doesn't exist
+            if (!db.objectStoreNames.contains(this.storeName)) {
+              const store = db.createObjectStore(this.storeName, { keyPath: 'id' });
+              store.createIndex('userId', 'userId', { unique: false });
+              store.createIndex('uploadDate', 'uploadDate', { unique: false });
+            }
+
+            // Create thumbnails store
+            if (!db.objectStoreNames.contains('thumbnails')) {
+              db.createObjectStore('thumbnails', { keyPath: 'id' });
+            }
+          };
+        });
+      }
+
+      async storeVideo(videoId, videoBlob, metadata) {
+        await this.init();
+        
+        return new Promise((resolve, reject) => {
+          const transaction = this.db.transaction([this.storeName], 'readwrite');
+          const store = transaction.objectStore(this.storeName);
+          
+          const videoData = {
+            id: videoId,
+            videoBlob: videoBlob,
+            metadata: metadata,
+            userId: metadata.userId,
+            uploadDate: metadata.uploadDate || new Date().toISOString(),
+            lastAccessed: new Date().toISOString()
+          };
+
+          const request = store.put(videoData);
+
+          request.onerror = () => reject(request.error);
+          request.onsuccess = () => {
+            console.log(`Video ${videoId} stored successfully`);
+            resolve(videoId);
+          };
+        });
+      }
+
+      async storeThumbnail(thumbnailId, thumbnailBlob) {
+        await this.init();
+        
+        return new Promise((resolve, reject) => {
+          const transaction = this.db.transaction(['thumbnails'], 'readwrite');
+          const store = transaction.objectStore('thumbnails');
+          
+          const thumbnailData = {
+            id: thumbnailId,
+            thumbnailBlob: thumbnailBlob,
+            created: new Date().toISOString()
+          };
+
+          const request = store.put(thumbnailData);
+
+          request.onerror = () => reject(request.error);
+          request.onsuccess = () => {
+            console.log(`Thumbnail ${thumbnailId} stored successfully`);
+            resolve(thumbnailId);
+          };
+        });
+      }
+
+      async getVideo(videoId) {
+        await this.init();
+        
+        return new Promise((resolve, reject) => {
+          const transaction = this.db.transaction([this.storeName], 'readonly');
+          const store = transaction.objectStore(this.storeName);
+          const request = store.get(videoId);
+
+          request.onerror = () => reject(request.error);
+          request.onsuccess = () => {
+            if (request.result) {
+              // Update last accessed time
+              this.updateLastAccessed(videoId);
+              resolve(request.result);
+            } else {
+              resolve(null);
+            }
+          };
+        });
+      }
+
+      async getThumbnail(thumbnailId) {
+        await this.init();
+        
+        return new Promise((resolve, reject) => {
+          const transaction = this.db.transaction(['thumbnails'], 'readonly');
+          const store = transaction.objectStore('thumbnails');
+          const request = store.get(thumbnailId);
+
+          request.onerror = () => reject(request.error);
+          request.onsuccess = () => {
+            resolve(request.result ? request.result.thumbnailBlob : null);
+          };
+        });
+      }
+
+      async updateLastAccessed(videoId) {
+        await this.init();
+        
+        return new Promise((resolve, reject) => {
+          const transaction = this.db.transaction([this.storeName], 'readwrite');
+          const store = transaction.objectStore(this.storeName);
+          const request = store.get(videoId);
+
+          request.onerror = () => reject(request.error);
+          request.onsuccess = () => {
+            const video = request.result;
+            if (video) {
+              video.lastAccessed = new Date().toISOString();
+              store.put(video);
+              resolve();
+            }
+          };
+        });
+      }
+
+      async deleteVideo(videoId) {
+        await this.init();
+        
+        return new Promise((resolve, reject) => {
+          const transaction = this.db.transaction([this.storeName], 'readwrite');
+          const store = transaction.objectStore(this.storeName);
+          const request = store.delete(videoId);
+
+          request.onerror = () => reject(request.error);
+          request.onsuccess = () => {
+            console.log(`Video ${videoId} deleted from IndexedDB`);
+            resolve();
+          };
+        });
+      }
+
+      async deleteThumbnail(thumbnailId) {
+        await this.init();
+        
+        return new Promise((resolve, reject) => {
+          const transaction = this.db.transaction(['thumbnails'], 'readwrite');
+          const store = transaction.objectStore('thumbnails');
+          const request = store.delete(thumbnailId);
+
+          request.onerror = () => reject(request.error);
+          request.onsuccess = () => {
+            console.log(`Thumbnail ${thumbnailId} deleted from IndexedDB`);
+            resolve();
+          };
+        });
+      }
+
+      async getVideosByUser(userId) {
+        await this.init();
+        
+        return new Promise((resolve, reject) => {
+          const transaction = this.db.transaction([this.storeName], 'readonly');
+          const store = transaction.objectStore(this.storeName);
+          const index = store.index('userId');
+          const request = index.getAll(userId);
+
+          request.onerror = () => reject(request.error);
+          request.onsuccess = () => resolve(request.result);
+        });
+      }
+
+      async getStorageUsage() {
+        await this.init();
+        
+        return new Promise((resolve, reject) => {
+          if (navigator.storage && navigator.storage.estimate) {
+            navigator.storage.estimate().then(estimate => {
+              resolve({
+                usage: estimate.usage,
+                quota: estimate.quota,
+                percentage: (estimate.usage / estimate.quota * 100).toFixed(2)
+              });
+            }).catch(reject);
+          } else {
+            resolve({ usage: 0, quota: 0, percentage: 0 });
+          }
+        });
+      }
+
+      async clearAllVideos() {
+        await this.init();
+        
+        return new Promise((resolve, reject) => {
+          const transaction = this.db.transaction([this.storeName, 'thumbnails'], 'readwrite');
+          const videoStore = transaction.objectStore(this.storeName);
+          const thumbnailStore = transaction.objectStore('thumbnails');
+          
+          videoStore.clear();
+          thumbnailStore.clear();
+          
+          transaction.oncomplete = () => {
+            console.log('All videos cleared from IndexedDB');
+            resolve();
+          };
+          
+          transaction.onerror = () => reject(transaction.error);
+        });
+      }
+    }
+
+    // Enhanced LamaTube Database Class with IndexedDB Storage
     class LamaTubeDB {
       constructor() {
+        this.videoStorage = new VideoStorageDB();
         this.initDB();
       }
 
@@ -2118,7 +2357,8 @@
           'lamatube_current_user': null,
           'lamatube_analytics': {},
           'lamatube_video_access': {},
-          'lamatube_subscriber_history': {}
+          'lamatube_subscriber_history': {},
+          'lamatube_analytics_365d': {} // New: 365-day analytics storage
         };
 
         for (const [key, value] of Object.entries(defaults)) {
@@ -2266,6 +2506,14 @@
         const filteredVideos = videos.filter(v => v.userId !== userId);
         localStorage.setItem('lamatube_videos', JSON.stringify(filteredVideos));
 
+        // Delete videos from IndexedDB
+        videos.filter(v => v.userId === userId).forEach(video => {
+          this.videoStorage.deleteVideo(video.id);
+          if (video.thumbnailId) {
+            this.videoStorage.deleteThumbnail(video.thumbnailId);
+          }
+        });
+
         const storages = [
           'lamatube_history',
           'lamatube_watchlater',
@@ -2289,6 +2537,10 @@
         const analytics = JSON.parse(localStorage.getItem('lamatube_analytics')) || {};
         delete analytics[userId];
         localStorage.setItem('lamatube_analytics', JSON.stringify(analytics));
+
+        const analytics365d = JSON.parse(localStorage.getItem('lamatube_analytics_365d')) || {};
+        delete analytics365d[userId];
+        localStorage.setItem('lamatube_analytics_365d', JSON.stringify(analytics365d));
 
         const videoAccess = JSON.parse(localStorage.getItem('lamatube_video_access')) || {};
         for (const videoId in videoAccess) {
@@ -2314,7 +2566,7 @@
         return JSON.parse(localStorage.getItem('lamatube_users')) || [];
       }
 
-      // ================== VIDEO MANAGEMENT =====================
+      // ================== VIDEO MANAGEMENT WITH INDEXEDDB =====================
       async uploadVideo(title, description, category, videoFile, thumbnailFile = null, privacy = 'public') {
         const currentUser = this.getCurrentUser();
         if (!currentUser) {
@@ -2323,30 +2575,42 @@
 
         this.validateVideoFile(videoFile);
 
+        let thumbnailId = null;
         if (thumbnailFile) {
           this.validateImageFile(thumbnailFile);
+          thumbnailId = `thumbnail_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+          await this.videoStorage.storeThumbnail(thumbnailId, thumbnailFile);
         }
+
+        const videoId = Date.now();
+        const metadata = {
+          title,
+          description,
+          category,
+          userId: currentUser.id,
+          username: currentUser.username,
+          userAvatar: currentUser.avatar,
+          privacy,
+          fileSize: videoFile.size,
+          mimeType: videoFile.type,
+          uploadDate: new Date().toISOString()
+        };
+
+        // Store video in IndexedDB
+        await this.videoStorage.storeVideo(videoId, videoFile, metadata);
 
         const videos = JSON.parse(localStorage.getItem('lamatube_videos')) || [];
         const users = JSON.parse(localStorage.getItem('lamatube_users')) || [];
 
-        let thumbnailData = null;
-        if (thumbnailFile) {
-          thumbnailData = await this.fileToDataURL(thumbnailFile);
-        }
-
-        const videoData = await this.fileToDataURL(videoFile);
-
         const newVideo = {
-          id: Date.now(),
+          id: videoId,
           title,
           description,
           category,
-          videoData,
-          thumbnailData,
           userId: currentUser.id,
           username: currentUser.username,
           userAvatar: currentUser.avatar,
+          thumbnailId: thumbnailId,
           views: 0,
           likes: 0,
           dislikes: 0,
@@ -2358,6 +2622,8 @@
           privacy: privacy,
           fileSize: videoFile.size,
           mimeType: videoFile.type,
+          resolution: await this.getVideoResolution(videoFile),
+          storageType: 'indexeddb',
           lastAccessed: null
         };
 
@@ -2379,7 +2645,60 @@
         };
         localStorage.setItem('lamatube_video_access', JSON.stringify(videoAccess));
 
+        // Initialize analytics for this video
+        this.initVideoAnalytics(videoId);
+
         return newVideo;
+      }
+
+      async getVideoBlobUrl(videoId) {
+        try {
+          const videoData = await this.videoStorage.getVideo(videoId);
+          if (videoData && videoData.videoBlob) {
+            return URL.createObjectURL(videoData.videoBlob);
+          }
+          return null;
+        } catch (error) {
+          console.error('Error getting video blob:', error);
+          return null;
+        }
+      }
+
+      async getThumbnailUrl(thumbnailId) {
+        try {
+          const thumbnailBlob = await this.videoStorage.getThumbnail(thumbnailId);
+          if (thumbnailBlob) {
+            return URL.createObjectURL(thumbnailBlob);
+          }
+          return null;
+        } catch (error) {
+          console.error('Error getting thumbnail:', error);
+          return null;
+        }
+      }
+
+      async getVideoResolution(videoFile) {
+        return new Promise((resolve) => {
+          const video = document.createElement('video');
+          video.preload = 'metadata';
+
+          video.onloadedmetadata = () => {
+            const resolution = video.videoWidth > 3840 ? '8K' : 
+                              video.videoWidth > 1920 ? '4K' :
+                              video.videoWidth > 1280 ? '1440p' :
+                              video.videoWidth > 720 ? '1080p' :
+                              video.videoWidth > 480 ? '720p' : '480p';
+            resolve(resolution);
+            URL.revokeObjectURL(video.src);
+          };
+
+          video.onerror = () => {
+            resolve('Unknown');
+            URL.revokeObjectURL(video.src);
+          };
+
+          video.src = URL.createObjectURL(videoFile);
+        });
       }
 
       updateVideoPrivacy(videoId, privacy) {
@@ -2400,7 +2719,7 @@
         return { success: false, message: 'Video not found' };
       }
 
-      deleteVideo(videoId) {
+      async deleteVideo(videoId) {
         const currentUser = this.getCurrentUser();
         if (!currentUser) return { success: false, message: 'Authentication required' };
 
@@ -2413,6 +2732,12 @@
 
         if (videos[videoIndex].userId !== currentUser.id) {
           return { success: false, message: 'You can only delete your own videos' };
+        }
+
+        // Delete from IndexedDB
+        await this.videoStorage.deleteVideo(videoId);
+        if (videos[videoIndex].thumbnailId) {
+          await this.videoStorage.deleteThumbnail(videos[videoIndex].thumbnailId);
         }
 
         videos.splice(videoIndex, 1);
@@ -2717,10 +3042,11 @@
         return subscriptions[userId] || [];
       }
 
-      // ================== ANALYTICS DATA ==================
+      // ================== ENHANCED ANALYTICS WITH 365-DAY SUPPORT ==================
       getChannelAnalytics(userId, period = '30d') {
         const analytics = JSON.parse(localStorage.getItem('lamatube_analytics')) || {};
-        const userAnalytics = analytics[userId] || {};
+        const analytics365d = JSON.parse(localStorage.getItem('lamatube_analytics_365d')) || {};
+        const userAnalytics = period === '365d' ? (analytics365d[userId] || {}) : (analytics[userId] || {});
         
         // Get dates for the period
         const dates = [];
@@ -2737,6 +3063,9 @@
           case '90d':
             startDate.setDate(startDate.getDate() - 90);
             break;
+          case '365d':
+            startDate.setDate(startDate.getDate() - 365);
+            break;
           default:
             startDate.setDate(startDate.getDate() - 30);
         }
@@ -2749,6 +3078,8 @@
         
         // Prepare data
         const viewsData = [];
+        const watchTimeData = [];
+        const revenueData = [];
         const subsHistory = JSON.parse(localStorage.getItem('lamatube_subscriber_history')) || {};
         const channelSubs = subsHistory[userId] || [];
         
@@ -2762,9 +3093,11 @@
         let lastSubCount = 0;
         
         dates.forEach(date => {
-          // Views data
-          const dayAnalytics = userAnalytics[date] || { views: 0, watchTime: 0 };
+          // Analytics data
+          const dayAnalytics = userAnalytics[date] || { views: 0, watchTime: 0, revenue: 0 };
           viewsData.push({ x: date, y: dayAnalytics.views || 0 });
+          watchTimeData.push({ x: date, y: Math.round((dayAnalytics.watchTime || 0) / 60) }); // Convert to minutes
+          revenueData.push({ x: date, y: dayAnalytics.revenue || 0 });
           
           // Subs data - use the latest count available for that date
           if (subsByDate[date]) {
@@ -2773,31 +3106,91 @@
           subsData.push({ x: date, y: lastSubCount });
         });
         
-        return { viewsOverTime: viewsData, subsOverTime: subsData };
+        return { 
+          viewsOverTime: viewsData, 
+          subsOverTime: subsData,
+          watchTimeOverTime: watchTimeData,
+          revenueOverTime: revenueData,
+          period: period
+        };
+      }
+
+      initVideoAnalytics(videoId) {
+        const analytics365d = JSON.parse(localStorage.getItem('lamatube_analytics_365d')) || {};
+        const video = this.getVideoById(videoId);
+        if (video && video.userId) {
+          if (!analytics365d[video.userId]) {
+            analytics365d[video.userId] = {};
+          }
+          const today = new Date().toISOString().split('T')[0];
+          if (!analytics365d[video.userId][today]) {
+            analytics365d[video.userId][today] = {
+              views: 0,
+              watchTime: 0,
+              revenue: 0
+            };
+          }
+          localStorage.setItem('lamatube_analytics_365d', JSON.stringify(analytics365d));
+        }
+      }
+
+      updateAnalytics(userId, watchTime) {
+        const analytics = JSON.parse(localStorage.getItem('lamatube_analytics')) || {};
+        const analytics365d = JSON.parse(localStorage.getItem('lamatube_analytics_365d')) || {};
+        
+        const today = new Date().toISOString().split('T')[0];
+        
+        // Update 30-day analytics
+        if (!analytics[userId]) analytics[userId] = {};
+        if (!analytics[userId][today]) {
+          analytics[userId][today] = {
+            views: 0,
+            watchTime: 0,
+            revenue: 0
+          };
+        }
+        analytics[userId][today].views++;
+        analytics[userId][today].watchTime += watchTime;
+        analytics[userId][today].revenue += (watchTime / 3600) * 0.5;
+        localStorage.setItem('lamatube_analytics', JSON.stringify(analytics));
+        
+        // Update 365-day analytics
+        if (!analytics365d[userId]) analytics365d[userId] = {};
+        if (!analytics365d[userId][today]) {
+          analytics365d[userId][today] = {
+            views: 0,
+            watchTime: 0,
+            revenue: 0
+          };
+        }
+        analytics365d[userId][today].views++;
+        analytics365d[userId][today].watchTime += watchTime;
+        analytics365d[userId][today].revenue += (watchTime / 3600) * 0.5;
+        localStorage.setItem('lamatube_analytics_365d', JSON.stringify(analytics365d));
       }
 
       // --- HELPER METHODS ---
       validateVideoFile(file) {
-        const validTypes = ['video/mp4', 'video/webm', 'video/ogg'];
-        const maxSize = 50 * 1024 * 1024;
+        const validTypes = ['video/mp4', 'video/webm', 'video/ogg', 'video/quicktime'];
+        const maxSize = 500 * 1024 * 1024; // 500MB for 4K videos
 
         if (!validTypes.includes(file.type)) {
-          throw new Error('Invalid video format. Please use MP4, WebM, or OGG.');
+          throw new Error('Invalid video format. Please use MP4, WebM, OGG, or MOV.');
         }
 
         if (file.size > maxSize) {
-          throw new Error('Video file is too large. Maximum size is 50MB.');
+          throw new Error(`Video file is too large. Maximum size is 500MB. Your file is ${(file.size / (1024*1024)).toFixed(2)}MB.`);
         }
 
         return true;
       }
 
       validateImageFile(file) {
-        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
         const maxSize = 5 * 1024 * 1024;
 
         if (!validTypes.includes(file.type)) {
-          throw new Error('Invalid image format. Please use JPEG, PNG, or GIF.');
+          throw new Error('Invalid image format. Please use JPEG, PNG, GIF, or WebP.');
         }
 
         if (file.size > maxSize) {
@@ -2863,6 +3256,10 @@
       clearAllData() {
         const keys = Object.keys(localStorage).filter(key => key.startsWith('lamatube_'));
         keys.forEach(key => localStorage.removeItem(key));
+        
+        // Clear IndexedDB
+        this.videoStorage.clearAllVideos().catch(console.error);
+        
         this.initDB();
         return { success: true };
       }
@@ -2964,25 +3361,6 @@
         return false;
       }
 
-      updateAnalytics(userId, watchTime) {
-        const analytics = JSON.parse(localStorage.getItem('lamatube_analytics')) || {};
-        if (!analytics[userId]) analytics[userId] = {};
-        const today = new Date().toISOString().split('T')[0];
-        if (!analytics[userId][today]) {
-          analytics[userId][today] = {
-            views: 0,
-            watchTime: 0,
-            revenue: 0
-          };
-        }
-
-        analytics[userId][today].views++;
-        analytics[userId][today].watchTime += watchTime;
-        analytics[userId][today].revenue += (watchTime / 3600) * 0.5;
-
-        localStorage.setItem('lamatube_analytics', JSON.stringify(analytics));
-      }
-
       getUserStats(userId) {
         const videos = this.getUserVideos(userId);
         const totalViews = videos.reduce((sum, video) => sum + (video.views || 0), 0);
@@ -2995,12 +3373,28 @@
           return sum;
         }, 0);
 
+        // Get 365-day analytics
+        const analytics365d = JSON.parse(localStorage.getItem('lamatube_analytics_365d')) || {};
+        const userAnalytics = analytics365d[userId] || {};
+        let yearlyViews = 0;
+        let yearlyWatchTime = 0;
+        let yearlyRevenue = 0;
+
+        Object.values(userAnalytics).forEach(day => {
+          yearlyViews += day.views || 0;
+          yearlyWatchTime += day.watchTime || 0;
+          yearlyRevenue += day.revenue || 0;
+        });
+
         return {
           totalViews,
           totalLikes,
           totalVideos,
           totalWatchTime: Math.round(totalWatchTime / 60),
-          subscribers: this.getUserById(userId)?.subscribers || 0
+          subscribers: this.getUserById(userId)?.subscribers || 0,
+          yearlyViews,
+          yearlyWatchTime: Math.round(yearlyWatchTime / 60),
+          yearlyRevenue: Math.round(yearlyRevenue * 100) / 100
         };
       }
 
@@ -3045,6 +3439,10 @@
         localStorage.setItem('lamatube_settings', JSON.stringify(settings));
         return true;
       }
+
+      async getStorageInfo() {
+        return await this.videoStorage.getStorageUsage();
+      }
     }
 
     // Main Application Class
@@ -3054,6 +3452,7 @@
         this.currentPage = 'home';
         this.currentVideo = null;
         this.videoPlayer = null;
+        this.videoBlobUrl = null;
         this.watchInterval = null;
         this.watchedSeconds = 0;
         this.videoStartTime = null;
@@ -3629,6 +4028,10 @@
                   <div class="account-stat-value">${stats.subscribers.toLocaleString()}</div>
                   <div class="account-stat-label">Subscribers</div>
                 </div>
+                <div class="account-stat">
+                  <div class="account-stat-value">${stats.yearlyViews.toLocaleString()}</div>
+                  <div class="account-stat-label">Yearly Views</div>
+                </div>
               </div>
             </div>
           </div>
@@ -3687,6 +4090,18 @@
             <div class="setting-item">
               <span>Subscribers</span>
               <span>${stats.subscribers.toLocaleString()}</span>
+            </div>
+            <div class="setting-item">
+              <span>Yearly Views (365 days)</span>
+              <span>${stats.yearlyViews.toLocaleString()}</span>
+            </div>
+            <div class="setting-item">
+              <span>Yearly Watch Time</span>
+              <span>${stats.yearlyWatchTime.toLocaleString()} minutes</span>
+            </div>
+            <div class="setting-item">
+              <span>Yearly Revenue</span>
+              <span>$${stats.yearlyRevenue.toFixed(2)}</span>
             </div>
           </div>
 
@@ -4001,8 +4416,8 @@
               html += `
                 <div class="continue-watching" data-video-id="${item.video.id}">
                   <div style="width: 120px; height: 68px; border-radius: 5px; overflow: hidden;">
-                    ${item.video.thumbnailData ? 
-                      `<img src="${item.video.thumbnailData}" style="width: 100%; height: 100%; object-fit: cover;">` : 
+                    ${item.video.thumbnailId ? 
+                      `<img src="" data-thumbnail-id="${item.video.thumbnailId}" style="width: 100%; height: 100%; object-fit: cover;" class="lazy-load">` : 
                       `<div style="background-color: ${this.db.getRandomColor()}; width: 100%; height: 100%;"></div>`}
                   </div>
                   <div style="flex: 1;">
@@ -4031,6 +4446,9 @@
             this.playVideo(videoId);
           });
         });
+
+        // Load thumbnails for continue watching
+        this.loadVideoThumbnails();
       }
 
       loadTrendingPage() {
@@ -4083,6 +4501,10 @@
                   <div style="font-size: 20px; font-weight: 700;">${stats.totalViews.toLocaleString()}</div>
                   <div style="font-size: 14px; color: var(--light-secondary-text);">Views</div>
                 </div>
+                <div>
+                  <div style="font-size: 20px; font-weight: 700;">${stats.yearlyViews.toLocaleString()}</div>
+                  <div style="font-size: 14px; color: var(--light-secondary-text);">Yearly Views</div>
+                </div>
               </div>
             </div>
           </div>
@@ -4096,7 +4518,7 @@
                 <div class="video-management-item">
                   <div>
                     <strong>${video.title}</strong><br>
-                    <small>${video.views} views • ${video.privacy === 'public' ? 'Public' : 'Private'}</small>
+                    <small>${video.views} views • ${video.privacy === 'public' ? 'Public' : 'Private'} • ${video.resolution || 'Unknown'}</small>
                   </div>
                   <div class="video-management-actions">
                     <button class="privacy-toggle ${video.privacy === 'public' ? 'public' : 'private'}"
@@ -4131,9 +4553,9 @@
         this.loadYourChannelPage();
       }
 
-      deleteVideo(videoId) {
+      async deleteVideo(videoId) {
         if (confirm('Are you sure you want to delete this video? This action cannot be undone.')) {
-          const result = this.db.deleteVideo(videoId);
+          const result = await this.db.deleteVideo(videoId);
           if (result.success) {
             this.showNotification('Video deleted', 'success');
             this.loadYourChannelPage();
@@ -4187,8 +4609,8 @@
               <div style="margin: 10px 0; padding: 10px; border: 1px solid var(--light-border); border-radius: 5px; cursor: pointer;" data-video-id="${item.video.id}">
                 <div style="display: flex; gap: 15px;">
                   <div style="width: 120px; height: 68px; border-radius: 5px; overflow: hidden; flex-shrink: 0;">
-                    ${item.video.thumbnailData ?
-                      `<img src="${item.video.thumbnailData}" style="width: 100%; height: 100%; object-fit: cover;">` :
+                    ${item.video.thumbnailId ?
+                      `<img src="" data-thumbnail-id="${item.video.thumbnailId}" style="width: 100%; height: 100%; object-fit: cover;" class="lazy-load">` :
                       `<div style="background-color: ${this.db.getRandomColor()}; width: 100%; height: 100%;"></div>`}
                   </div>
                   <div style="flex: 1;">
@@ -4224,6 +4646,9 @@
               this.loadHistoryPage();
             }
           });
+
+          // Load thumbnails
+          this.loadVideoThumbnails();
         }
       }
 
@@ -4268,6 +4693,7 @@
               <button class="date-range-btn ${this.analyticsPeriod === '7d' ? 'active' : ''}" data-period="7d">7D</button>
               <button class="date-range-btn ${this.analyticsPeriod === '30d' ? 'active' : ''}" data-period="30d">30D</button>
               <button class="date-range-btn ${this.analyticsPeriod === '90d' ? 'active' : ''}" data-period="90d">90D</button>
+              <button class="date-range-btn ${this.analyticsPeriod === '365d' ? 'active' : ''}" data-period="365d">365D</button>
             </div>
           </div>
 
@@ -4280,7 +4706,7 @@
               <div class="analytics-value">${stats.totalViews.toLocaleString()}</div>
               <div class="analytics-change positive">
                 <i class="fas fa-arrow-up"></i>
-                Growing
+                ${stats.yearlyViews > 0 ? 'Growing' : 'No data'}
               </div>
             </div>
 
@@ -4292,7 +4718,7 @@
               <div class="analytics-value">${stats.subscribers.toLocaleString()}</div>
               <div class="analytics-change positive">
                 <i class="fas fa-arrow-up"></i>
-                Growing
+                ${stats.subscribers > 0 ? 'Growing' : 'No subscribers'}
               </div>
             </div>
 
@@ -4304,7 +4730,7 @@
               <div class="analytics-value">${Math.round(stats.totalWatchTime).toLocaleString()}m</div>
               <div class="analytics-change positive">
                 <i class="fas fa-arrow-up"></i>
-                Growing
+                ${stats.yearlyWatchTime > 0 ? 'Growing' : 'No data'}
               </div>
             </div>
 
@@ -4316,7 +4742,31 @@
               <div class="analytics-value">${stats.totalVideos}</div>
               <div class="analytics-change positive">
                 <i class="fas fa-arrow-up"></i>
-                Growing
+                ${stats.totalVideos > 0 ? 'Active' : 'No videos'}
+              </div>
+            </div>
+
+            <div class="analytics-card">
+              <div class="analytics-title">
+                <i class="fas fa-calendar-alt"></i>
+                <span>Yearly Views</span>
+              </div>
+              <div class="analytics-value">${stats.yearlyViews.toLocaleString()}</div>
+              <div class="analytics-change positive">
+                <i class="fas fa-arrow-up"></i>
+                365-day period
+              </div>
+            </div>
+
+            <div class="analytics-card">
+              <div class="analytics-title">
+                <i class="fas fa-money-bill-wave"></i>
+                <span>Yearly Revenue</span>
+              </div>
+              <div class="analytics-value">$${stats.yearlyRevenue.toFixed(2)}</div>
+              <div class="analytics-change positive">
+                <i class="fas fa-arrow-up"></i>
+                365-day estimate
               </div>
             </div>
           </div>
@@ -4326,7 +4776,7 @@
           html += `
             <div class="chart-container">
               <div class="chart-header">
-                <h2 class="chart-title">Views Over Time</h2>
+                <h2 class="chart-title">Views Over Time (${this.analyticsPeriod})</h2>
               </div>
               <canvas id="viewsOverTimeChart" height="300"></canvas>
             </div>
@@ -4340,12 +4790,27 @@
 
             <div class="chart-container">
               <div class="chart-header">
+                <h2 class="chart-title">Watch Time Over Time (${this.analyticsPeriod})</h2>
+              </div>
+              <canvas id="watchTimeChart" height="300"></canvas>
+            </div>
+
+            <div class="chart-container">
+              <div class="chart-header">
+                <h2 class="chart-title">Revenue Over Time (${this.analyticsPeriod})</h2>
+              </div>
+              <canvas id="revenueChart" height="300"></canvas>
+            </div>
+
+            <div class="chart-container">
+              <div class="chart-header">
                 <h2 class="chart-title">Video Performance</h2>
                 <div class="chart-controls">
                   <select class="sort-selector" id="videoSortSelector">
                     <option value="views" ${this.videoSortType === 'views' ? 'selected' : ''}>By Views</option>
                     <option value="name" ${this.videoSortType === 'name' ? 'selected' : ''}>By Name</option>
                     <option value="date" ${this.videoSortType === 'date' ? 'selected' : ''}>By Upload Date</option>
+                    <option value="resolution" ${this.videoSortType === 'resolution' ? 'selected' : ''}>By Resolution</option>
                   </select>
                 </div>
               </div>
@@ -4359,8 +4824,10 @@
         document.getElementById('pageContent').innerHTML = html;
 
         if (userVideos.length > 0) {
-          this.renderViewsOverTimeChart(analyticsData.viewsOverTime);
+          this.renderViewsOverTimeChart(analyticsData.viewsOverTime, analyticsData.period);
           this.renderSubsOverTimeChart(analyticsData.subsOverTime);
+          this.renderWatchTimeChart(analyticsData.watchTimeOverTime, analyticsData.period);
+          this.renderRevenueChart(analyticsData.revenueOverTime, analyticsData.period);
           
           // Sort videos based on current sort type
           let sortedVideos = [...userVideos];
@@ -4370,6 +4837,12 @@
               break;
             case 'date':
               sortedVideos.sort((a, b) => new Date(b.uploadDate) - new Date(a.uploadDate));
+              break;
+            case 'resolution':
+              sortedVideos.sort((a, b) => {
+                const resOrder = {'8K': 0, '4K': 1, '1440p': 2, '1080p': 3, '720p': 4, '480p': 5, 'Unknown': 6};
+                return (resOrder[a.resolution] || 6) - (resOrder[b.resolution] || 6);
+              });
               break;
             case 'views':
             default:
@@ -4393,7 +4866,7 @@
         }
       }
 
-      renderViewsOverTimeChart(viewsData) {
+      renderViewsOverTimeChart(viewsData, period) {
         const ctx = document.getElementById('viewsOverTimeChart');
         if (!ctx) return;
 
@@ -4401,16 +4874,35 @@
           window.viewsOverTimeChartInstance.destroy();
         }
 
+        const isYearly = period === '365d';
+        const labels = viewsData.map((d, i) => {
+          if (isYearly && viewsData.length > 30) {
+            // Show monthly labels for yearly data
+            const date = new Date(d.x);
+            if (i % 30 === 0 || i === viewsData.length - 1) {
+              return `${date.getMonth()+1}/${date.getDate()}`;
+            }
+            return '';
+          } else {
+            const date = new Date(d.x);
+            return `${date.getMonth()+1}/${date.getDate()}`;
+          }
+        }).filter(label => label !== '');
+
+        const filteredData = isYearly && viewsData.length > 30 ? 
+          viewsData.filter((d, i) => i % 7 === 0 || i === viewsData.length - 1) : 
+          viewsData;
+
         window.viewsOverTimeChartInstance = new Chart(ctx, {
           type: 'line',
           data: {
-            labels: viewsData.map(d => {
+            labels: filteredData.map(d => {
               const date = new Date(d.x);
               return `${date.getMonth()+1}/${date.getDate()}`;
             }),
             datasets: [{
               label: 'Views',
-              data: viewsData.map(d => d.y),
+              data: filteredData.map(d => d.y),
               backgroundColor: 'rgba(255, 0, 0, 0.1)',
               borderColor: '#ff0000',
               borderWidth: 2,
@@ -4429,7 +4921,8 @@
             scales: {
               x: {
                 ticks: {
-                  color: document.body.classList.contains('dark-mode') ? '#aaa' : '#606060'
+                  color: document.body.classList.contains('dark-mode') ? '#aaa' : '#606060',
+                  maxRotation: 45
                 },
                 grid: {
                   color: document.body.classList.contains('dark-mode') ? '#303030' : '#e5e5e5'
@@ -4505,6 +4998,128 @@
         });
       }
 
+      renderWatchTimeChart(watchTimeData, period) {
+        const ctx = document.getElementById('watchTimeChart');
+        if (!ctx) return;
+
+        if (window.watchTimeChartInstance) {
+          window.watchTimeChartInstance.destroy();
+        }
+
+        const isYearly = period === '365d';
+        const filteredData = isYearly && watchTimeData.length > 30 ? 
+          watchTimeData.filter((d, i) => i % 7 === 0 || i === watchTimeData.length - 1) : 
+          watchTimeData;
+
+        window.watchTimeChartInstance = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: filteredData.map(d => {
+              const date = new Date(d.x);
+              return `${date.getMonth()+1}/${date.getDate()}`;
+            }),
+            datasets: [{
+              label: 'Watch Time (minutes)',
+              data: filteredData.map(d => d.y),
+              backgroundColor: '#06d6a0',
+              borderColor: '#05c593',
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: false
+              }
+            },
+            scales: {
+              x: {
+                ticks: {
+                  color: document.body.classList.contains('dark-mode') ? '#aaa' : '#606060',
+                  maxRotation: 45
+                },
+                grid: {
+                  color: document.body.classList.contains('dark-mode') ? '#303030' : '#e5e5e5'
+                }
+              },
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  color: document.body.classList.contains('dark-mode') ? '#aaa' : '#606060'
+                },
+                grid: {
+                  color: document.body.classList.contains('dark-mode') ? '#303030' : '#e5e5e5'
+                }
+              }
+            }
+          }
+        });
+      }
+
+      renderRevenueChart(revenueData, period) {
+        const ctx = document.getElementById('revenueChart');
+        if (!ctx) return;
+
+        if (window.revenueChartInstance) {
+          window.revenueChartInstance.destroy();
+        }
+
+        const isYearly = period === '365d';
+        const filteredData = isYearly && revenueData.length > 30 ? 
+          revenueData.filter((d, i) => i % 7 === 0 || i === revenueData.length - 1) : 
+          revenueData;
+
+        window.revenueChartInstance = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: filteredData.map(d => {
+              const date = new Date(d.x);
+              return `${date.getMonth()+1}/${date.getDate()}`;
+            }),
+            datasets: [{
+              label: 'Revenue ($)',
+              data: filteredData.map(d => d.y),
+              backgroundColor: 'rgba(255, 193, 7, 0.1)',
+              borderColor: '#ffc107',
+              borderWidth: 2,
+              tension: 0.1,
+              fill: true
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: false
+              }
+            },
+            scales: {
+              x: {
+                ticks: {
+                  color: document.body.classList.contains('dark-mode') ? '#aaa' : '#606060',
+                  maxRotation: 45
+                },
+                grid: {
+                  color: document.body.classList.contains('dark-mode') ? '#303030' : '#e5e5e5'
+                }
+              },
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  color: document.body.classList.contains('dark-mode') ? '#aaa' : '#606060'
+                },
+                grid: {
+                  color: document.body.classList.contains('dark-mode') ? '#303030' : '#e5e5e5'
+                }
+              }
+            }
+          }
+        });
+      }
+
       renderVideoPerformanceChart(videos) {
         const ctx = document.getElementById('videoPerformanceChart');
         if (!ctx) return;
@@ -4516,11 +5131,14 @@
         window.videoPerformanceChartInstance = new Chart(ctx, {
           type: 'bar',
           data: {
-            labels: videos.map(v => v.title.substring(0, 20) + (v.title.length > 20 ? '...' : '')),
+            labels: videos.map(v => v.title.substring(0, 15) + (v.title.length > 15 ? '...' : '')),
             datasets: [{
               label: 'Views',
               data: videos.map(v => v.views || 0),
-              backgroundColor: '#ff0000',
+              backgroundColor: videos.map(v => 
+                v.resolution === '4K' || v.resolution === '8K' ? '#7209b7' : 
+                v.resolution === '1440p' ? '#3a86ff' : '#ff0000'
+              ),
               borderColor: '#cc0000',
               borderWidth: 1
             }]
@@ -4531,6 +5149,18 @@
             plugins: {
               legend: {
                 display: false
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    const video = videos[context.dataIndex];
+                    return [
+                      `Views: ${video.views || 0}`,
+                      `Resolution: ${video.resolution || 'Unknown'}`,
+                      `Uploaded: ${new Date(video.uploadDate).toLocaleDateString()}`
+                    ];
+                  }
+                }
               }
             },
             scales: {
@@ -4586,6 +5216,11 @@
                 <h2>${likedVideos}</h2>
                 <p>Videos you've liked</p>
               </div>
+              <div style="background-color: var(--light-header); padding: 20px; border-radius: 10px;">
+                <h3 style="color: var(--primary-red); margin-bottom: 10px;">Storage</h3>
+                <h2 id="storageUsage">Loading...</h2>
+                <p>Video storage usage</p>
+              </div>
             </div>
           `;
         } else {
@@ -4593,9 +5228,26 @@
         }
 
         document.getElementById('pageContent').innerHTML = html;
+
+        // Load storage info
+        if (currentUser) {
+          this.loadStorageInfo();
+        }
       }
 
-      displayVideoGrid(videos, title) {
+      async loadStorageInfo() {
+        try {
+          const storageInfo = await this.db.getStorageInfo();
+          const usageMB = (storageInfo.usage / (1024 * 1024)).toFixed(2);
+          const quotaMB = (storageInfo.quota / (1024 * 1024)).toFixed(2);
+          document.getElementById('storageUsage').textContent = `${usageMB} MB / ${quotaMB} MB (${storageInfo.percentage}%)`;
+        } catch (error) {
+          console.error('Error loading storage info:', error);
+          document.getElementById('storageUsage').textContent = 'Unavailable';
+        }
+      }
+
+      async displayVideoGrid(videos, title) {
         let html = '';
 
         if (title) {
@@ -4607,11 +5259,11 @@
         } else {
           html += '<div class="video-grid">';
           const currentUser = this.db.getCurrentUser();
-          videos.forEach(video => {
+          for (const video of videos) {
             const likeStatus = currentUser ?
               this.db.getUserLikeStatus(currentUser.id, video.id) : null;
             html += this.createVideoCardHTML(video, likeStatus);
-          });
+          }
           html += '</div>';
         }
 
@@ -4623,7 +5275,7 @@
         }
 
         this.addVideoCardEventListeners();
-        this.lazyLoadImages();
+        this.loadVideoThumbnails();
       }
 
       createVideoCardHTML(video, likeStatus = null) {
@@ -4636,13 +5288,15 @@
         return `
           <div class="video-card" data-video-id="${video.id}">
             <div class="thumbnail">
-              ${video.thumbnailData ?
-                `<img src="${video.thumbnailData}" alt="${video.title}" class="lazy-load">` :
+              ${video.thumbnailId ?
+                `<img src="" alt="${video.title}" data-thumbnail-id="${video.thumbnailId}" class="lazy-load">` :
                 `<div style="background-color: ${this.db.getRandomColor()}; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">No Thumbnail</div>`}
               ${video.privacy === 'private' ?
                 `<div class="video-privacy-badge">
                   <i class="fas fa-lock"></i> Private
                 </div>` : ''}
+              ${video.resolution && (video.resolution === '4K' || video.resolution === '8K') ?
+                `<div class="video-duration" style="background-color: #7209b7;">${video.resolution}</div>` : ''}
               ${duration > 0 ?
                 `<div class="video-duration">${durationText}</div>` : ''}
             </div>
@@ -4657,7 +5311,8 @@
                 <p class="video-card-channel">${video.username}</p>
                 <p class="video-card-stats">
                   ${video.views?.toLocaleString() || 0} views •
-                  ${new Date(video.uploadDate).toLocaleDateString()}
+                  ${new Date(video.uploadDate).toLocaleDateString()} •
+                  ${video.resolution || ''}
                 </p>
                 ${currentUser ?
                   `<div class="video-actions">
@@ -4672,6 +5327,23 @@
             </div>
           </div>
         `;
+      }
+
+      async loadVideoThumbnails() {
+        const thumbnailElements = document.querySelectorAll('img[data-thumbnail-id]');
+        
+        for (const img of thumbnailElements) {
+          const thumbnailId = img.dataset.thumbnailId;
+          try {
+            const thumbnailUrl = await this.db.getThumbnailUrl(thumbnailId);
+            if (thumbnailUrl) {
+              img.src = thumbnailUrl;
+              img.classList.add('loaded');
+            }
+          } catch (error) {
+            console.error('Error loading thumbnail:', error);
+          }
+        }
       }
 
       addVideoCardEventListeners() {
@@ -4741,6 +5413,12 @@
 
       async playVideo(videoId) {
         try {
+          // Clean up previous video blob URL if exists
+          if (this.videoBlobUrl) {
+            URL.revokeObjectURL(this.videoBlobUrl);
+            this.videoBlobUrl = null;
+          }
+
           const video = this.db.getVideoById(videoId);
 
           if (!video) {
@@ -4780,15 +5458,19 @@
 
           const comments = this.db.getComments(videoId);
 
+          // Get video blob URL from IndexedDB
+          this.videoBlobUrl = await this.db.getVideoBlobUrl(videoId);
+          if (!this.videoBlobUrl) {
+            throw new Error('Video not found in storage');
+          }
+
           let html = `
             <div class="video-player-container">
               <div class="video-player">
-                ${video.videoData ?
-                  `<video id="mainVideoPlayer" playsinline>
-                    <source src="${video.videoData}" type="${video.mimeType || 'video/mp4'}">
-                    Your browser does not support the video tag.
-                  </video>` :
-                  `<div style="color: white; display: flex; align-items: center; justify-content: center; height: 100%;">Video not available</div>`}
+                <video id="mainVideoPlayer" playsinline>
+                  <source src="${this.videoBlobUrl}" type="${video.mimeType || 'video/mp4'}">
+                  Your browser does not support the video tag.
+                </video>
                 <div class="player-controls">
                   <div class="progress-bar" id="progressBar">
                     <div class="progress-fill" id="progressFill"></div>
@@ -4822,6 +5504,8 @@
                         <option value="360p">360p</option>
                         <option value="720p">720p</option>
                         <option value="1080p">1080p</option>
+                        <option value="1440p">1440p</option>
+                        <option value="2160p">4K (2160p)</option>
                       </select>
                       <button class="control-btn" id="fullscreenBtn">
                         <i class="fas fa-expand"></i>
@@ -4834,7 +5518,7 @@
               <div class="video-info">
                 <h1 class="video-title">${video.title} ${video.privacy === 'private' ? '<i class="fas fa-lock" style="font-size: 20px; color: var(--primary-red); margin-left: 10px;"></i>' : ''}</h1>
                 <div style="color: var(--light-secondary-text); margin-bottom: 15px;">
-                  ${video.views?.toLocaleString() || 0} views • ${new Date(video.uploadDate).toLocaleDateString()}
+                  ${video.views?.toLocaleString() || 0} views • ${new Date(video.uploadDate).toLocaleDateString()} • ${video.resolution || ''}
                 </div>
                 <p>${video.description || 'No description provided.'}</p>
                 <div class="video-stats">
@@ -5304,7 +5988,8 @@
           video.title.toLowerCase().includes(query) ||
           (video.description && video.description.toLowerCase().includes(query)) ||
           (video.username && video.username.toLowerCase().includes(query)) ||
-          (video.category && video.category.toLowerCase().includes(query))
+          (video.category && video.category.toLowerCase().includes(query)) ||
+          (video.resolution && video.resolution.toLowerCase().includes(query))
         );
 
         let html = `
@@ -5422,7 +6107,7 @@
 
     // Initialize the app
     let app;
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
       try {
         app = new LamaTubeApp();
         window.app = app;
@@ -5529,6 +6214,9 @@
             app.videoPlayer.removeAttribute('src');
             app.videoPlayer.load();
           }
+          if (app.videoBlobUrl) {
+            URL.revokeObjectURL(app.videoBlobUrl);
+          }
         });
 
       } catch (error) {
@@ -5549,7 +6237,8 @@
     window.LamaTube = {
       app: null,
       db: LamaTubeDB,
-      version: '2.0.0'
+      version: '3.0.0',
+      features: ['IndexedDB Storage', '4K Support', '365-Day Analytics']
     };
   </script>
 </body>
